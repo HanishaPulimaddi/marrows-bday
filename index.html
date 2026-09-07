@@ -1,0 +1,1371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F7DDDD">
+<title>Happy Birthday</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 28C6 21 2 16.5 2 11a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 5.5-4 10-14 17Z' fill='%23B01818'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root{
+  --maroon-1:#7A1010;
+  --maroon-2:#6B0F0F;
+  --maroon-3:#5B0C0C;
+  --cream:#F0EDE6;
+  --blush:#F7DDDD;
+  --ink:#F2E8E4;          /* warm off-white on maroon */
+  --ink-dim:#CDB2AE;
+  --ink-dark:#3A2A28;     /* text on cream */
+  --ink-dark-dim:#6E5B58;
+
+  --frame:12px;
+  --card-r:14px;
+  --serif:"Cormorant Garamond","EB Garamond",Georgia,"Times New Roman",serif;
+  --sans:"Poppins","Questrial",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+
+  --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --crumple:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004 0.007' numOctaves='5' seed='9'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+  --creases:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.05' numOctaves='2' seed='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='0 0 0 0 0 1 0 0'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23k)'/%3E%3C/svg%3E");
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  background:var(--blush);
+  font-family:var(--sans);
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  color:var(--ink);
+  overflow:hidden;
+}
+
+/* ============================================================
+   DECK / SNAP SCROLLING
+   ============================================================ */
+.deck{
+  height:100dvh;
+  overflow-y:auto;
+  overflow-x:hidden;
+  scroll-snap-type:y mandatory;
+  scroll-behavior:smooth;
+  scrollbar-width:none;
+}
+.deck::-webkit-scrollbar{display:none}
+
+.panel{
+  height:100dvh;
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+  padding:var(--frame);
+  padding-top:calc(var(--frame) + env(safe-area-inset-top));
+  padding-bottom:calc(var(--frame) + env(safe-area-inset-bottom));
+  display:flex;
+  overflow:hidden;   /* the hero cut-out spills onto the frame, not the next panel */
+}
+
+/* The card sits on the blush frame. overflow is visible so the hero
+   cut-out can spill past the bottom edge; the paper layer inside is
+   the thing that gets clipped + rounded. */
+.card{
+  position:relative;
+  flex:1;
+  min-height:0;
+  border-radius:var(--card-r);
+  box-shadow:0 14px 34px rgba(107,15,15,.20), 0 2px 6px rgba(107,15,15,.10);
+}
+.paper{
+  position:absolute;
+  inset:0;
+  border-radius:var(--card-r);
+  overflow:hidden;
+  z-index:0;
+}
+.paper::before,.paper::after{content:"";position:absolute;inset:-20%;pointer-events:none}
+
+/* --- maroon crumpled paper --------------------------------- */
+.paper.maroon{
+  background:
+    radial-gradient(120% 90% at 78% 12%, rgba(255,255,255,.10), transparent 60%),
+    radial-gradient(90% 70% at 12% 88%, rgba(0,0,0,.30), transparent 62%),
+    linear-gradient(158deg, var(--maroon-1) 0%, var(--maroon-2) 46%, var(--maroon-3) 100%);
+}
+.paper.maroon::before{
+  background-image:var(--creases),var(--crumple);
+  background-size:300px 300px, 900px 900px;
+  background-position:0 0, 60% 30%;
+  opacity:.28;
+  mix-blend-mode:soft-light;
+}
+.paper.maroon::after{
+  background:
+    repeating-linear-gradient(112deg, rgba(255,255,255,.022) 0 1px, transparent 1px 41px),
+    repeating-linear-gradient(-38deg, rgba(0,0,0,.030) 0 1px, transparent 1px 57px),
+    repeating-linear-gradient(19deg,  rgba(255,255,255,.016) 0 1px, transparent 1px 73px),
+    repeating-linear-gradient(-71deg, rgba(0,0,0,.022) 0 1px, transparent 1px 89px),
+    repeating-linear-gradient(63deg,  rgba(255,255,255,.014) 0 1px, transparent 1px 103px);
+  opacity:.9;
+  mix-blend-mode:soft-light;
+}
+
+/* --- cream / oatmeal paper --------------------------------- */
+.paper.cream{
+  background:
+    radial-gradient(120% 80% at 20% 8%, rgba(255,255,255,.85), transparent 60%),
+    radial-gradient(100% 80% at 88% 96%, rgba(196,182,160,.30), transparent 62%),
+    linear-gradient(168deg,#F5F2EB 0%, var(--cream) 52%, #E7E2D7 100%);
+}
+.paper.cream::before{
+  background-image:var(--creases),var(--crumple);
+  background-size:280px 280px, 820px 820px;
+  background-position:20% 10%, 0 0;
+  opacity:.17;
+  mix-blend-mode:multiply;
+}
+.paper.cream .veins{
+  position:absolute;inset:-20%;pointer-events:none;
+  background:
+    repeating-linear-gradient(96deg, rgba(150,132,105,.040) 0 1px, transparent 1px 33px),
+    repeating-linear-gradient(-14deg, rgba(255,255,255,.55) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(41deg, rgba(150,132,105,.028) 0 1px, transparent 1px 61px);
+  mix-blend-mode:multiply;
+}
+.paper.cream::after{
+  background-image:var(--noise);
+  background-size:170px 170px;
+  opacity:.30;
+  mix-blend-mode:multiply;
+}
+
+/* grain over the maroon too, finer */
+.grain{
+  position:absolute;inset:0;border-radius:var(--card-r);
+  background-image:var(--noise);background-size:160px 160px;
+  opacity:.10;mix-blend-mode:overlay;pointer-events:none;z-index:1;
+}
+
+.stage{position:relative;z-index:2;height:100%;width:100%;min-height:0}
+
+/* ============================================================
+   IMAGE PLACEHOLDERS
+   ============================================================ */
+.ph{
+  position:relative;
+  container-type:inline-size;
+  width:100%;
+  aspect-ratio:var(--ar,1);
+  background:
+    repeating-linear-gradient(45deg, rgba(0,0,0,.035) 0 8px, transparent 8px 16px),
+    linear-gradient(180deg,#C9C6C2,#B3B0AC);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.35em;
+  color:#6A6763;
+  overflow:hidden;
+}
+.ph svg{width:clamp(18px,22%,40px);height:auto;opacity:.62}
+.ph-label{
+  font-family:var(--sans);font-weight:400;
+  font-size:clamp(7px,1.7vw,10px);
+  letter-spacing:.10em;text-transform:lowercase;
+  opacity:.75;text-align:center;padding:0 .4em;line-height:1.2;
+  max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+@container (max-width:78px){ .ph-label{display:none} }
+.slot img{width:100%;height:100%;object-fit:cover;display:block}
+.slot{display:block;width:100%;aspect-ratio:var(--ar,1);overflow:hidden}
+
+/* ============================================================
+   SWIPE HINT
+   ============================================================ */
+.hint{
+  position:absolute;left:50%;bottom:calc(var(--frame) + 6px);
+  transform:translateX(-50%);
+  z-index:8;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  text-shadow:0 1px 6px rgba(0,0,0,.35);
+  font-family:var(--sans);font-weight:300;
+  font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;
+  opacity:.85;transition:opacity .5s ease;
+  pointer-events:none;
+}
+.hint.is-hidden{opacity:0}
+.hint svg{width:16px;height:16px;animation:bob 1.8s ease-in-out infinite}
+.hint.on-maroon{color:var(--ink);text-shadow:0 1px 10px rgba(0,0,0,.55),0 0 3px rgba(0,0,0,.4)}
+.hint.on-cream{color:var(--ink-dark-dim)}
+@keyframes bob{0%,100%{transform:translateY(-2px)}50%{transform:translateY(3px)}}
+
+/* ============================================================
+   REVEAL ANIMATION
+   ============================================================ */
+[data-anim]{opacity:0;transform:translateY(14px)}
+[data-anim].in{
+  opacity:1;transform:none;
+  transition:opacity .8s cubic-bezier(.2,.7,.3,1) var(--d,0ms),
+             transform .8s cubic-bezier(.2,.7,.3,1) var(--d,0ms);
+}
+
+/* ============================================================
+   SECTION 1 — HERO
+   ============================================================ */
+.hero{position:relative;height:100%;overflow:visible}
+
+.hero-copy{
+  position:absolute;
+  top:20%;right:6%;left:6%;
+  text-align:right;
+  z-index:4;
+}
+.hero-title{
+  font-family:var(--serif);
+  font-weight:600;
+  font-size:clamp(2.5rem,9vw,4.5rem);
+  line-height:.98;
+  letter-spacing:.005em;
+  margin:0;
+  color:var(--ink);
+  text-shadow:0 2px 14px rgba(0,0,0,.28);
+}
+.hero-title em{font-style:italic;font-weight:400}
+.hero-name{
+  font-family:var(--sans);font-weight:300;
+  font-size:clamp(.95rem,4.2vw,1.6rem);
+  letter-spacing:.06em;
+  margin:.55em 0 0;color:var(--ink);
+  text-shadow:0 1px 10px rgba(60,6,6,.55);
+}
+.hero-date{
+  font-family:var(--sans);font-weight:300;
+  font-size:clamp(.6rem,2.6vw,.85rem);
+  letter-spacing:.14em;
+  margin:.35em 0 0;color:var(--ink-dim);
+  text-shadow:0 1px 8px rgba(60,6,6,.6);
+}
+.hero-note{
+  position:absolute;
+  right:6%;bottom:36%;left:44%;
+  text-align:left;
+  z-index:4;
+  font-family:var(--sans);font-weight:300;
+  font-size:clamp(.62rem,2.8vw,.95rem);
+  line-height:1.75;letter-spacing:.05em;
+  color:var(--ink);
+  /* small type sitting where the balloons are still at full white */
+  text-shadow:0 1px 2px rgba(60,6,6,.9), 0 2px 14px rgba(60,6,6,.8);
+}
+
+/* cut-out portrait: desaturated, spills past the card's bottom edge */
+.hero-portrait{
+  position:absolute;
+  left:-4%;
+  bottom:-1.2%;
+  width:66%;
+  max-width:340px;
+  z-index:3;
+  filter:grayscale(1) contrast(1.04) brightness(1.02);
+  /* It's a photograph, not a cut-out, so soften the two edges that sit on open
+     paper. The left and bottom edges bleed off the card and are clipped there,
+     and her face is near the top, so the top fade has to stay shallow. */
+  -webkit-mask-image:
+      linear-gradient(to bottom, transparent 0, #000 10%),
+      linear-gradient(to left, #000 66%, transparent 100%);
+          mask-image:
+      linear-gradient(to bottom, transparent 0, #000 10%),
+      linear-gradient(to left, #000 66%, transparent 100%);
+  -webkit-mask-composite:source-in;
+          mask-composite:intersect;
+}
+.hero-portrait .ph{border-radius:4px}
+
+/* doodle stickers */
+.sticker{position:absolute;z-index:5;pointer-events:none}
+.sticker svg{width:100%;height:auto;display:block}
+.sticker--bubble{left:3%;top:55%;width:20%;max-width:96px;transform:rotate(-7deg)}
+.sticker--envelope{left:46%;top:63%;width:17%;max-width:88px;transform:rotate(9deg)}
+.sticker--hearts{left:1%;bottom:-.8%;width:46%;max-width:280px;transform:rotate(-2deg)}
+
+/* --- balloons: they rise once, when the page opens --------- */
+.balloons{
+  position:absolute;
+  inset:0;
+  z-index:1;          /* behind the portrait, the copy and the stickers */
+  pointer-events:none;
+  overflow:visible;
+}
+.balloon{
+  position:absolute;
+  bottom:-30%;
+  left:var(--x);
+  width:var(--w);
+  opacity:0;
+  animation:balloon-rise var(--dur) cubic-bezier(.34,.08,.42,1) var(--delay) forwards;
+  will-change:transform,opacity;
+}
+.balloon .sway{
+  animation:balloon-sway var(--sway) ease-in-out infinite alternate;
+  transform-origin:50% 8%;
+}
+.balloon svg{width:100%;height:auto;display:block}
+
+@keyframes balloon-rise{
+  0%   {transform:translate3d(0,0,0);opacity:0}
+  7%   {opacity:var(--o,1)}
+  52%  {opacity:var(--o,1)}
+  /* thinning out before they reach the headline, so white balloons never
+     swallow the off-white type on their way past */
+  74%  {opacity:.34}
+  100% {transform:translate3d(var(--dx),-142vh,0);opacity:0}
+}
+@keyframes balloon-sway{
+  from {transform:translateX(-5%) rotate(-4deg)}
+  to   {transform:translateX(5%) rotate(4deg)}
+}
+
+/* --- soap bubbles: the one thing on the page you can touch ------- */
+.bubbles{
+  position:absolute;
+  inset:0;
+  z-index:7;              /* in front, so they're always tappable */
+  pointer-events:none;    /* only the bubbles themselves take taps */
+}
+.bubble{
+  position:absolute;
+  left:var(--x);top:var(--y);
+  width:var(--w);
+  aspect-ratio:1;
+  pointer-events:auto;
+  cursor:pointer;
+  will-change:transform;          /* the shove away from your finger */
+  -webkit-tap-highlight-color:transparent;
+}
+.bubble-float{
+  position:absolute;inset:0;
+  animation:bubble-wander var(--wander) ease-in-out var(--delay) infinite;
+}
+.bubble-skin{
+  position:absolute;inset:0;
+  border-radius:50%;
+  transition:transform .25s ease;
+  background:
+    radial-gradient(circle at 30% 26%, rgba(255,255,255,.95) 0 5%, rgba(255,255,255,.4) 11%, transparent 26%),
+    radial-gradient(circle at 70% 74%, rgba(255,255,255,.55) 0 3%, transparent 14%),
+    radial-gradient(circle at 50% 50%,
+       rgba(255,255,255,.03) 52%,
+       rgba(255,214,224,.22) 74%,
+       rgba(255,255,255,.42) 88%,
+       rgba(214,228,255,.30) 96%,
+       rgba(255,255,255,.05) 100%);
+  box-shadow:inset 0 0 14px rgba(255,255,255,.30), 0 2px 10px rgba(0,0,0,.10);
+}
+.bubble:hover .bubble-skin{transform:scale(1.07)}
+
+.bubble.is-pop{pointer-events:none}
+.bubble.is-pop .bubble-skin{opacity:0;animation:bubble-pop .45s ease-out forwards}
+.bubble.is-pop .bubble-skin::after{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  border:2px solid rgba(255,255,255,.75);
+  animation:bubble-ring .45s ease-out forwards;
+}
+.bubble.is-new .bubble-skin{animation:bubble-in .55s ease-out}
+
+@keyframes bubble-wander{
+  0%   {transform:translate(0,0)}
+  25%  {transform:translate(3.5%,-6%)}
+  50%  {transform:translate(-2.5%,-10%)}
+  75%  {transform:translate(-4.5%,-4%)}
+  100% {transform:translate(0,0)}
+}
+@keyframes bubble-pop{
+  0%   {transform:scale(1);opacity:1}
+  45%  {transform:scale(1.22);opacity:.8}
+  100% {transform:scale(1.5);opacity:0}
+}
+@keyframes bubble-ring{
+  0%   {transform:scale(.92);opacity:.85}
+  100% {transform:scale(1.85);opacity:0}
+}
+@keyframes bubble-in{
+  0%   {transform:scale(.4);opacity:0}
+  60%  {transform:scale(1.06);opacity:1}
+  100% {transform:scale(1);opacity:1}
+}
+
+/* the doodles bounce, then rest - travel is a share of their own height so it
+   scales with the card */
+.sticker--bubble.in   {animation:bounce-bubble 2.6s ease-out 1.1s infinite}
+.sticker--envelope.in {animation:bounce-envelope 2.9s ease-out 1.5s infinite}
+
+@keyframes bounce-bubble{
+  0%   {transform:rotate(-7deg) translateY(0)}
+  14%  {transform:rotate(-7deg) translateY(-30%)}
+  28%  {transform:rotate(-7deg) translateY(0)}
+  38%  {transform:rotate(-7deg) translateY(-14%)}
+  48%  {transform:rotate(-7deg) translateY(0)}
+  55%  {transform:rotate(-7deg) translateY(-5%)}
+  62%,100%{transform:rotate(-7deg) translateY(0)}
+}
+@keyframes bounce-envelope{
+  0%   {transform:rotate(9deg) translateY(0)}
+  14%  {transform:rotate(9deg) translateY(-32%)}
+  28%  {transform:rotate(9deg) translateY(0)}
+  38%  {transform:rotate(9deg) translateY(-15%)}
+  48%  {transform:rotate(9deg) translateY(0)}
+  55%  {transform:rotate(9deg) translateY(-5%)}
+  62%,100%{transform:rotate(9deg) translateY(0)}
+}
+
+/* ============================================================
+   SECTION 2 — REASONS
+   ============================================================ */
+.reasons{
+  height:100%;
+  display:flex;flex-direction:column;
+  justify-content:center;
+  gap:clamp(14px,3.4vh,30px);
+  padding:clamp(18px,5vw,44px) clamp(14px,5vw,52px);
+  color:var(--ink-dark);
+}
+.reasons-head{
+  display:flex;align-items:baseline;justify-content:center;
+  gap:.34em;flex-wrap:nowrap;
+}
+.pill{
+  display:inline-block;
+  background:var(--maroon-2);
+  color:#F3E6E3;
+  font-family:var(--sans);font-weight:400;
+  font-size:clamp(.62rem,2.8vw,1rem);
+  letter-spacing:.04em;
+  padding:.22em .42em .26em;
+  border-radius:2px;
+  transform:translateY(-.06em);
+}
+.reasons-title{
+  font-family:var(--serif);font-weight:600;
+  font-size:clamp(1.7rem,7.4vw,3.1rem);
+  line-height:1;margin:0;color:#2C1B1A;letter-spacing:.01em;
+}
+.reasons-title em{font-style:italic;font-weight:400}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:clamp(12px,3.6vw,26px) clamp(10px,3.2vw,24px);
+  /* squares are driven by column width, so cap that against the viewport
+     height - otherwise the 3 rows overflow a short screen */
+  max-width:min(100%, calc((200dvh - 464px) / 3 + 12px));
+  margin-inline:auto;
+  width:100%;
+}
+.cell{display:flex;flex-direction:column;align-items:center;gap:.6em;margin:0}
+.cell .frame{
+  width:100%;
+  border:1px solid rgba(60,45,40,.14);
+  background:#fff;
+  padding:2px;
+  box-shadow:0 1px 3px rgba(60,40,35,.10);
+  transition:transform .35s ease, box-shadow .35s ease;
+}
+.cell:hover .frame,.cell:active .frame{
+  transform:translateY(-4px);
+  box-shadow:0 10px 20px rgba(60,40,35,.16);
+}
+.cell figcaption{
+  font-family:var(--sans);font-weight:300;
+  font-size:clamp(.6rem,2.7vw,.82rem);
+  letter-spacing:.045em;line-height:1.4;
+  text-align:center;color:var(--ink-dark-dim);
+  max-width:16ch;
+}
+
+/* ============================================================
+   SECTION 3 — LETTER
+   ============================================================ */
+.letter-wrap{
+  height:100%;
+  display:grid;
+  grid-template-rows:minmax(0,auto) minmax(0,1fr);
+  gap:clamp(8px,2vh,18px);
+  padding:clamp(14px,4vw,38px) clamp(14px,4.5vw,44px) clamp(10px,2.5vh,26px);
+  min-height:0;
+}
+
+/* --- collage --- */
+.collage{
+  position:relative;
+  height:clamp(170px,31vh,300px);
+  width:100%;
+  container-type:size;   /* lets the polaroids size themselves in cqh */
+}
+.polaroid{
+  position:absolute;
+  background:#FBF8F3;
+  /* --pw is the frame's own width, handed in with the inline layout - percentage
+     padding here would resolve against the collage instead */
+  padding:calc(var(--pw) * .055) calc(var(--pw) * .055) calc(var(--pw) * .16);
+  box-shadow:0 6px 16px rgba(0,0,0,.34);
+  border-radius:2px;
+}
+.polaroid .slot,.polaroid .ph{--ar:3/4}
+.polaroid{z-index:2}                     /* left/top/width/rotation set inline */
+.p-hero{
+  --pw:44cqh;
+  left:34%;top:19%;width:44cqh;
+  transform:rotate(2deg);
+  z-index:4;
+}
+.p-hero .slot,.p-hero .ph{--ar:2/3}
+
+.tape{
+  position:absolute;
+  background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,.18));
+  border-left:1px solid rgba(255,255,255,.25);
+  border-right:1px solid rgba(255,255,255,.25);
+  z-index:6;
+  mix-blend-mode:screen;
+}
+.tape::after{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.14) 0 3px,transparent 3px 7px);
+}
+.tape-a{left:29%;top:15%;width:17%;height:7%;transform:rotate(-27deg)}
+.tape-b{left:11%;top:-2%;width:15%;height:6%;transform:rotate(13deg)}
+
+.accent{position:absolute;z-index:7;pointer-events:none}
+.accent svg{width:100%;height:auto;display:block}
+/* anchored with the same height-based unit the polaroids are sized in, so they
+   keep hugging the frame corners instead of drifting onto a face as the
+   collage changes shape */
+.seal{left:calc(34% + 40cqh);top:calc(19% + 52cqh);width:12%}
+.star-a{left:calc(34% + 38cqh);top:11%;width:13%}
+.star-b{left:calc(3% + 20cqh);top:86%;width:9%}
+
+/* --- letter text --- */
+.letter{
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  min-height:0;
+}
+.letter-title{
+  font-family:var(--serif);font-weight:600;
+  font-size:clamp(1.5rem,6.6vw,2.6rem);
+  line-height:1.05;margin:0 0 .5em;
+  color:var(--ink);text-align:center;
+}
+.letter-title em{font-style:italic;font-weight:400}
+.letter-body{
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding-right:10px;
+  max-width:46ch;
+  margin:0 auto;
+  font-family:var(--sans);font-weight:300;
+  font-size:clamp(.62rem,2.85vw,.86rem);
+  line-height:1.9;letter-spacing:.03em;
+  color:var(--ink);
+  -webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 26px),transparent 100%);
+          mask-image:linear-gradient(180deg,#000 calc(100% - 26px),transparent 100%);
+}
+.letter-body::-webkit-scrollbar{width:3px}
+.letter-body::-webkit-scrollbar-thumb{background:rgba(242,232,228,.30);border-radius:3px}
+.letter-body p{margin:0 0 1.15em}
+.letter-body .signoff{margin-top:1.6em}
+.letter-body .signoff span{display:block}
+
+.more-wrap{padding-top:clamp(8px,1.6vh,16px);text-align:center}
+.more{
+  display:inline-block;
+  font-family:var(--sans);font-weight:300;
+  font-size:clamp(.6rem,2.6vw,.8rem);
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink);text-decoration:none;
+  border:1px solid rgba(242,232,228,.42);
+  border-radius:999px;
+  padding:.7em 1.5em;
+  transition:background .3s ease,border-color .3s ease,transform .3s ease;
+}
+.more:hover,.more:focus-visible{
+  background:rgba(242,232,228,.12);
+  border-color:rgba(242,232,228,.75);
+  transform:translateY(-2px);
+}
+
+/* ============================================================
+   ≥720px  — wider phones / tablets / desktop
+   ============================================================ */
+@media (min-width:720px){
+  :root{--frame:22px;--card-r:18px}
+  .grid{grid-template-columns:repeat(3,1fr);max-width:min(100%, calc(150dvh - 520px))}
+  .hero-copy{top:14%;left:46%;right:7%}
+  .hero-note{left:46%;right:7%;bottom:16%}
+  .hero-portrait{width:38%;left:2%}
+  .sticker--bubble{left:4%;top:26%;width:13%}
+  .sticker--envelope{left:33%;top:44%;width:11%}
+  .sticker--hearts{left:3%;width:30%}
+}
+
+/* 720-899px: single column, so keep the collage box near the cluster's own
+   proportions instead of letting it stretch the full card width. */
+@media (min-width:720px) and (max-width:899px){
+  .collage{
+    height:clamp(260px,36vh,420px);
+    width:min(100%, calc(1.18 * clamp(260px,36vh,420px)));
+    margin-inline:auto;
+  }
+}
+
+@media (min-width:900px){
+  :root{--frame:30px;--card-r:20px}
+  .letter-wrap{
+    grid-template-rows:1fr;
+    grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+    gap:clamp(20px,3vw,48px);
+    align-items:stretch;   /* the letter column must be bounded so it can scroll */
+  }
+  .collage{height:min(72vh,560px);align-self:center}
+  .hero-portrait{width:min(32%, 46vh);max-width:none}
+  .letter-title{text-align:left}
+  .letter-body{margin:0}
+  .more-wrap{text-align:left}
+  .reasons{padding-inline:clamp(40px,8vw,110px)}
+}
+
+/* ============================================================
+   SECTION 4 — THE GIFT
+   ============================================================ */
+.gift{
+  height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(18px,4vh,34px);
+  padding:clamp(20px,6vw,48px);
+  text-align:center;
+}
+.gift-kicker{
+  font-family:var(--serif);font-style:italic;font-weight:400;
+  font-size:clamp(.95rem,4vw,1.35rem);
+  letter-spacing:.06em;color:var(--ink-dim);margin:0;
+}
+
+/* box and message share one cell, so the text arrives in the box's place */
+.gift-stage{
+  position:relative;
+  display:grid;
+  place-items:center;
+  width:100%;
+  min-height:clamp(210px,34vh,320px);
+}
+.gift-stage > *{grid-area:1/1}
+
+.glow{
+  width:clamp(190px,58vw,300px);
+  aspect-ratio:1;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(201,162,39,.32) 0%, rgba(201,162,39,.13) 42%, transparent 70%);
+  animation:gift-glow 3s ease-in-out infinite;
+  pointer-events:none;
+}
+.giftbox{
+  position:relative;
+  width:clamp(140px,44vw,220px);
+  aspect-ratio:200/170;
+  cursor:pointer;
+  animation:gift-breathe 3s ease-in-out infinite;
+}
+.giftbox svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible}
+.box-lid{transform-origin:50% 38%}
+
+@keyframes gift-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+@keyframes gift-glow{0%,100%{opacity:.55;transform:scale(.96)}50%{opacity:1;transform:scale(1.06)}}
+
+.gift-open{
+  font-family:var(--sans);font-weight:300;
+  font-size:clamp(.62rem,2.7vw,.8rem);
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink);background:none;
+  border:1px solid rgba(242,232,228,.42);
+  border-radius:999px;padding:.7em 1.7em;cursor:pointer;
+  transition:background .3s ease,border-color .3s ease,opacity .25s ease;
+}
+.gift-open:hover,.gift-open:focus-visible{
+  background:rgba(242,232,228,.12);border-color:rgba(242,232,228,.75);
+}
+
+/* --- confetti: 24 pieces, transforms + opacity only --- */
+.confetti{position:absolute;inset:0;pointer-events:none;z-index:4}
+.piece{
+  position:absolute;left:50%;top:33%;
+  width:var(--w);height:var(--h);
+  background:var(--c);border-radius:var(--r,0);
+  opacity:0;will-change:transform,opacity;
+}
+
+/* --- the message that replaces the box --- */
+.gift-message{
+  display:flex;flex-direction:column;align-items:center;
+  gap:clamp(14px,3vh,24px);
+  visibility:hidden;
+  z-index:3;
+}
+.gift-msg{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(1.05rem,4.8vw,1.7rem);
+  line-height:1.55;letter-spacing:.01em;
+  color:var(--ink);margin:0;max-width:26ch;text-wrap:balance;
+}
+.gift-msg em{font-style:italic}
+.gift-cta{
+  display:inline-block;
+  font-family:var(--sans);font-weight:300;
+  font-size:clamp(.6rem,2.6vw,.8rem);
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink);text-decoration:none;
+  border:1px solid rgba(242,232,228,.42);
+  border-radius:999px;padding:.7em 1.5em;
+  transition:background .3s ease,border-color .3s ease,transform .3s ease;
+}
+.gift-cta:hover,.gift-cta:focus-visible{
+  background:rgba(242,232,228,.12);border-color:rgba(242,232,228,.75);transform:translateY(-2px);
+}
+.gift-replay{
+  font-family:var(--sans);font-weight:300;
+  font-size:clamp(.55rem,2.3vw,.7rem);
+  letter-spacing:.14em;text-transform:lowercase;
+  color:var(--ink-dim);background:none;border:0;padding:.3em;
+  cursor:pointer;text-decoration:underline;text-underline-offset:3px;
+}
+.gift-replay:hover,.gift-replay:focus-visible{color:var(--ink)}
+.gift-msg,.gift-cta,.gift-replay{opacity:0;transform:translateY(10px)}
+
+/* --- opened state: the whole sequence, done inside 2s --- */
+.gift[data-state="open"] .giftbox{animation:none;cursor:default}
+.gift[data-state="open"] .glow{animation:none;opacity:0;transition:opacity .5s ease}
+.gift[data-state="open"] .box-lid{animation:lid-fly .95s cubic-bezier(.25,.8,.35,1) forwards}
+.gift[data-state="open"] .box-body{animation:box-out .5s ease .25s forwards}
+.gift[data-state="open"] .piece{animation:confetti-burst var(--dur) cubic-bezier(.2,.6,.4,1) var(--delay) forwards}
+.gift[data-state="open"] .gift-message{visibility:visible}
+.gift[data-state="open"] .gift-msg{animation:gift-rise .6s ease .7s forwards}
+.gift[data-state="open"] .gift-cta{animation:gift-rise .45s ease 1.2s forwards}
+.gift[data-state="open"] .gift-replay{animation:gift-rise .45s ease 1.45s forwards}
+.gift[data-state="open"] .gift-open{opacity:0;pointer-events:none}
+
+@keyframes lid-fly{
+  0%{transform:translateY(0) rotate(0deg);opacity:1}
+  18%{transform:translateY(-9%) rotate(-4deg);opacity:1}
+  100%{transform:translateY(-320%) rotate(-25deg);opacity:0}
+}
+@keyframes box-out{to{transform:translateY(16px) scale(.95);opacity:0}}
+@keyframes gift-rise{to{opacity:1;transform:none}}
+@keyframes confetti-burst{
+  0%{transform:translate3d(0,0,0) rotate(0deg) scale(.5);opacity:0}
+  8%{opacity:1}
+  32%{transform:translate3d(calc(var(--dx) * .45), var(--rise), 0) rotate(calc(var(--rot) * .4)) scale(1);opacity:1}
+  100%{transform:translate3d(var(--dx), var(--fall), 0) rotate(var(--rot)) scale(.9);opacity:0}
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation:none !important;
+    transition:none !important;
+  }
+  .deck{scroll-behavior:auto}
+  [data-anim]{opacity:1 !important;transform:none !important}
+  .hint svg{animation:none}
+
+  /* no lid flight, no confetti - the box just cross-fades to the message */
+  .giftbox,.glow,.gift-open,.gift-msg,.gift-cta,.gift-replay{
+    transition:opacity .25s linear !important;
+  }
+  .gift-msg,.gift-cta,.gift-replay{opacity:0 !important;transform:none !important}
+  .gift[data-state="open"] .giftbox,
+  .gift[data-state="open"] .glow,
+  .gift[data-state="open"] .gift-open{opacity:0 !important}
+  .gift[data-state="open"] .gift-msg,
+  .gift[data-state="open"] .gift-cta,
+  .gift[data-state="open"] .gift-replay{opacity:1 !important}
+}
+</style>
+</head>
+
+<body>
+<main class="deck" id="deck"></main>
+
+<script>
+/* ============================================================================
+   CONTENT — every word on the site lives here.
+   ============================================================================ */
+const CONTENT = {
+  hero: {
+    title:   "Happy Birthday",
+    name:    "Marion",
+    date:    "09/09/2026",
+    note:    ["Happy Birthday, My Love", "A letter made just for you"]
+  },
+
+  reasons: {
+    pill:    "reason",
+    title:   "I <em>Love</em> You",
+    captions: [
+      "Your smile",
+      "Your hugs",
+      "Your patience",
+      "Your kindness",
+      "The way you make me laugh",
+      "Everything about you"
+    ]
+  },
+
+  letter: {
+    title: "A <em>Letter</em> for You",
+    paragraphs: [
+      "Happy birthday, my love.",
+      "I don't think words will ever be enough to tell you how much you mean to me, but today I want to try. Thank you for being the person who makes my heart feel that little bit lighter. Thank you for every laugh, every walk, every little conversation that turned into something bigger than it needed to be.",
+      "As long as I have you, I know I'll always have somewhere to come home to. I love your kindness, your patience, your stubborn hope, and the way you care for the people around you — even on the days it costs you something. I am so grateful to know you, and to be loved by you.",
+      "On your birthday, I wish you everything you'd wish for yourself: the confidence to chase every dream, the strength to outlast every challenge, and the quiet reassurance that today is genuinely yours.",
+      "No matter what this next chapter brings, I hope you always remember that you'll have someone cheering for you, believing in you, and loving you through every season of life."
+    ],
+    signoff: [
+      "Thank you for being you.",
+      "Happy birthday, my forever person.",
+      "I love you, always."
+    ]
+  },
+
+  gift: {
+    kicker:  "one last thing",
+    open:    "Open",
+    message: ["I know you keep sending us your lists.",
+              "So I made you somewhere to put them."],
+    cta:     "Open your gift →",
+    ctaHref: "/app/",
+    replay:  "replay"
+  },
+
+  hint: "Swipe up to explore",
+  more: "One more thing →",
+  /* "#gift" scrolls on to section 4. Set it to "/app/" to jump straight there. */
+  moreHref: "#gift"
+};
+
+/* ============================================================================
+   IMAGES — swap null for a path (e.g. "img/hero.png") to drop a real photo in.
+   Placeholders render automatically wherever a slot is still null.
+   ============================================================================ */
+const IMAGES = {
+  heroPortrait: 'img/hero.jpg',            // 3:4
+
+  reasons: [                               // 1:1, one per caption above
+    'img/reason-1.jpg',
+    'img/reason-2.jpg',
+    'img/reason-3.jpg',
+    'img/reason-4.jpg',
+    'img/reason-5.jpg',
+    'img/reason-6.jpg'
+  ],
+
+  /* The small polaroids running down the left of the collage: 3:4, any number
+     of them - the stack sizes and overlaps itself to fit. */
+  polaroids: [
+    'img/polaroid-1.jpg',
+    'img/polaroid-2.jpg',
+    'img/polaroid-3.jpg'
+  ],
+
+  polaroidHero: 'img/polaroid-hero.jpg'    // 2:3, the big one over the stack
+};
+
+/* ============================================================================
+   RENDER
+   ============================================================================ */
+const CAMERA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.2l1.1-2h8.4l1.1 2h2.2A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-9Z"/>
+<circle cx="12" cy="13" r="3.6"/></svg>`;
+
+/* One reusable slot renderer: real image if present, labelled placeholder if not. */
+function slot(src, name, ratio, alt, eager){
+  const ar = `--ar:${ratio}`;
+  if (src) return `<div class="slot" style="${ar}"><img src="${src}" alt="${alt || name}"
+    decoding="async"${eager ? '' : ' loading="lazy"'}></div>`;
+  return `<div class="ph" style="${ar}" role="img" aria-label="placeholder: ${name}">
+      ${CAMERA}<span class="ph-label">${name}</span>
+    </div>`;
+}
+
+const chevron = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>`;
+
+function hintEl(tone){
+  return `<div class="hint ${tone}" data-hint><span>${CONTENT.hint}</span>${chevron}</div>`;
+}
+
+/* ---------- doodle stickers (inline SVG, no images) ---------- */
+const DOODLES = {
+  bubble: `<svg viewBox="0 0 120 100" fill="none" aria-hidden="true">
+    <ellipse cx="66" cy="40" rx="44" ry="30" fill="#F6ECEA" stroke="#7A1010" stroke-width="2.4"/>
+    <circle cx="26" cy="76" r="8" fill="#F6ECEA" stroke="#7A1010" stroke-width="2.2"/>
+    <circle cx="14" cy="90" r="4.5" fill="#F6ECEA" stroke="#7A1010" stroke-width="2"/>
+    <g stroke="#7A1010" stroke-width="2.2" stroke-linejoin="round" fill="#C21C1C">
+      <path d="M64 40c-6-12-20-14-22-4-1.6 8 10 12 22 4Z"/>
+      <path d="M66 40c6-12 20-14 22-4 1.6 8-10 12-22 4Z"/>
+      <path d="M65 33v16" stroke-linecap="round" fill="none"/>
+      <path d="M65 33l-5-6M65 33l5-6" stroke-linecap="round" fill="none"/>
+    </g>
+  </svg>`,
+
+  envelope: `<svg viewBox="0 0 120 84" fill="none" aria-hidden="true">
+    <rect x="3" y="3" width="114" height="78" rx="4" fill="#EFE3D2" stroke="#8A6A46" stroke-width="2.4"/>
+    <path d="M3 8l57 40 57-40" stroke="#8A6A46" stroke-width="2.4" fill="none"/>
+    <path d="M3 78l40-30M117 78L77 48" stroke="#8A6A46" stroke-width="2" fill="none"/>
+    <g transform="translate(60 50)">
+      <circle r="13" fill="#B01818" stroke="#7A1010" stroke-width="2"/>
+      <path d="M0 6c-6-4-8-7-8-10a4.4 4.4 0 0 1 8-2 4.4 4.4 0 0 1 8 2c0 3-2 6-8 10Z" fill="#F2D9D9"/>
+    </g>
+  </svg>`,
+
+  hearts: (() => {
+    let h = `<svg viewBox="0 0 320 74" fill="none" aria-hidden="true">
+      <rect x="2" y="10" width="316" height="60" rx="3" fill="#FBF6EE" stroke="#C9B79A" stroke-width="2"/>`;
+    const spots = [
+      [30,44,1.0,-8],[68,32,0.8,10],[104,48,1.15,-4],[146,34,0.9,7],
+      [182,47,1.05,-11],[222,33,0.85,5],[258,46,1.1,-6],[294,36,0.8,12]
+    ];
+    for (const [x,y,s,r] of spots){
+      h += `<g transform="translate(${x} ${y}) rotate(${r}) scale(${s})">
+        <path d="M0 9c-9-6-13-11-13-16a6.6 6.6 0 0 1 13-3 6.6 6.6 0 0 1 13 3c0 5-4 10-13 16Z"
+          fill="#C21C1C" stroke="#7A1010" stroke-width="1.6" stroke-linejoin="round"/></g>`;
+    }
+    return h + `</svg>`;
+  })()
+};
+
+const rand = (a, b) => a + Math.random() * (b - a);
+
+/* ---------- balloons ---------- */
+/* all white - depth comes from size and a little translucency, not colour */
+const balloonSVG = () => `<svg viewBox="0 0 60 100" aria-hidden="true">
+  <path d="M30 66c-13 0-24-13-24-30S17 4 30 4s24 15 24 32-11 30-24 30Z" fill="#FFFFFF"/>
+  <path d="M30 66c-13 0-24-13-24-30 0-3 .4-6 1.1-8.7C9 40 18 49 30 49s21-9 22.9-21.7C53.6 30 54 33 54 36c0 17-11 30-24 30Z"
+        fill="#E9DEDA" opacity=".55"/>
+  <ellipse cx="20" cy="25" rx="6" ry="10" fill="#fff" transform="rotate(-20 20 25)"/>
+  <path d="M30 66l-4.5 7h9L30 66Z" fill="#FFFFFF" stroke="#D8CBC7" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M30 73c7 8-7 13 0 21" fill="none" stroke="#F0E4E0" stroke-width="1.4" stroke-linecap="round" opacity=".8"/>
+</svg>`;
+
+/* one drift up the card per balloon - no loop, this is a page-open moment */
+function balloonsHTML(n = 20){
+  let out = '';
+  for (let i = 0; i < n; i++){
+    /* spread the starts across the width in bands so they don't clump */
+    const band = (i % 5) * 20;
+    out += `<div class="balloon" style="
+      --x:${(band + rand(-3, 15)).toFixed(1)}%;
+      --w:${rand(11, 19).toFixed(1)}vmin;
+      --o:${rand(.9, 1).toFixed(2)};
+      --dx:${rand(-55, 55).toFixed(0)}px;
+      --dur:${rand(6.5, 10.5).toFixed(2)}s;
+      --delay:${rand(0, 3.4).toFixed(2)}s;
+      --sway:${rand(2.4, 4.2).toFixed(2)}s;"><div class="sway">${balloonSVG()}</div></div>`;
+  }
+  return out;
+}
+
+/* ---------- bubbles ----------
+   Slow drifting soap bubbles. Tap one and it pops, then a fresh one blows in
+   somewhere else, so there is always something to poke at. */
+const bubbleSpot = () => ({
+  x: rand(3, 90).toFixed(1) + '%',
+  y: rand(6, 88).toFixed(1) + '%',
+  w: rand(4.5, 12).toFixed(1) + 'vmin'
+});
+
+function bubblesHTML(n = 30){
+  let out = '';
+  for (let i = 0; i < n; i++){
+    const p = bubbleSpot();
+    out += `<div class="bubble" data-x="${parseFloat(p.x)}" data-y="${parseFloat(p.y)}" style="
+      --x:${p.x}; --y:${p.y}; --w:${p.w};
+      --wander:${rand(13, 22).toFixed(1)}s;
+      --delay:-${rand(0, 12).toFixed(1)}s;"><div class="bubble-float"><div class="bubble-skin"></div></div></div>`;
+  }
+  return out;
+}
+
+const ACCENTS = {
+  seal: `<svg viewBox="0 0 60 60" aria-hidden="true">
+    <circle cx="30" cy="30" r="26" fill="#B8B6C8" stroke="#8E8CA5" stroke-width="2"/>
+    <circle cx="30" cy="30" r="19" fill="none" stroke="#F4F3F8" stroke-width="1.6" stroke-dasharray="3 4"/>
+    <circle cx="30" cy="30" r="9" fill="#DDDCE8" stroke="#8E8CA5" stroke-width="1.6"/>
+    <path d="M30 4l4 6-8 0 4-6ZM56 30l-6 4 0-8 6 4ZM30 56l-4-6 8 0-4 6ZM4 30l6-4 0 8-6-4Z" fill="#C6C4D6"/>
+  </svg>`,
+  star: `<svg viewBox="0 0 60 60" aria-hidden="true">
+    <path d="M30 2l6.6 18.4L55 27l-18.4 6.6L30 52l-6.6-18.4L5 27l18.4-6.6L30 2Z"
+      fill="#3E5FA8" stroke="#22407F" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M30 14l3 9 9 3-9 3-3 9-3-9-9-3 9-3 3-9Z" fill="#7FA0DC" opacity=".85"/>
+  </svg>`,
+  bow: `<svg viewBox="0 0 60 60" aria-hidden="true">
+    <g stroke="#22407F" stroke-width="1.8" stroke-linejoin="round" fill="#3E5FA8">
+      <path d="M28 30C18 18 6 20 6 30s12 12 22 0Z"/>
+      <path d="M32 30c10-12 22-10 22 0s-12 12-22 0Z"/>
+      <circle cx="30" cy="30" r="5.5" fill="#7FA0DC"/>
+      <path d="M27 35l-6 18M33 35l6 18" fill="none" stroke-linecap="round"/>
+    </g>
+  </svg>`
+};
+
+/* ---------- the gift box (inline SVG, two layers so the lid can fly) ---------- */
+const GOLD="#C9A227", GOLD_DK="#A8861D", GOLD_LT="#D9B443";
+
+/* both layers share one viewBox, so the lid always lands on the body */
+const BOX_BODY = `<svg class="box-body" viewBox="0 0 200 170" aria-hidden="true">
+  <rect x="20" y="56" width="160" height="104" rx="6" fill="#8A1414"/>
+  <rect x="86" y="56" width="28" height="104" fill="${GOLD}"/>
+  <rect x="20" y="96" width="160" height="24" fill="${GOLD}"/>
+  <rect x="20" y="56" width="160" height="104" rx="6" fill="none" stroke="#F2E8E4" stroke-width="3"/>
+  <path d="M20 120h160M20 96h160" stroke="${GOLD_DK}" stroke-width="1.2" opacity=".55"/>
+</svg>`;
+
+const BOX_LID = `<svg class="box-lid" viewBox="0 0 200 170" aria-hidden="true">
+  <path d="M97 34C74 44 46 36 48 21 50 8 80 16 97 32Z" fill="${GOLD}" stroke="${GOLD_DK}" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M103 34c23 10 51 2 49-13-2-13-32-5-49 11Z" fill="${GOLD}" stroke="${GOLD_DK}" stroke-width="2.4" stroke-linejoin="round"/>
+  <rect x="10" y="36" width="180" height="28" rx="5" fill="#F2E8E4" stroke="#7A1010" stroke-width="2.5"/>
+  <rect x="86" y="36" width="28" height="28" fill="${GOLD}"/>
+  <circle cx="100" cy="36" r="8" fill="${GOLD_LT}" stroke="${GOLD_DK}" stroke-width="2.2"/>
+</svg>`;
+
+/* ---------- collage stack ----------
+   The small polaroids are sized off the collage HEIGHT (cqh), so however many
+   there are, the run fills the column and laps the one above it. */
+const SMALL_RATIO = 3/4;    // the photo inside each small frame
+const PAD_SIDE    = 0.055;  // white border, as a fraction of the frame's width
+const PAD_TOP     = 0.055;
+const PAD_BOTTOM  = 0.16;
+const LAP         = 0.22;   // how far each polaroid overlaps the previous one
+
+/* frame height for a given frame width, both in the same units */
+const frameHeight = w =>
+  w * ((1 - 2 * PAD_SIDE) / SMALL_RATIO + PAD_TOP + PAD_BOTTOM);
+
+function stackLayout(n){
+  if (n < 1) return [];
+  const h    = n === 1 ? 60 : 100 / (n - LAP * (n - 1));   // frame height, % of collage
+  const w    = h / (frameHeight(1));                       // frame width, in cqh
+  const step = h * (1 - LAP);
+  const tilts = [-4, 3, -3, 5, -5];
+  const lefts = [3, 6, 3, 7, 5];
+  return Array.from({ length: n }, (_, i) => ({
+    top: i * step, width: w, rot: tilts[i % tilts.length], left: lefts[i % lefts.length]
+  }));
+}
+
+/* ---------- section builders ---------- */
+function sectionHero(){
+  const c = CONTENT.hero;
+  return `
+  <section class="panel" id="hero">
+    <div class="card">
+      <div class="paper maroon"></div><div class="grain"></div>
+      <div class="stage hero">
+
+        <div class="balloons" id="balloons" aria-hidden="true"></div>
+        <div class="bubbles" id="bubbles" aria-hidden="true"></div>
+
+        <div class="hero-copy">
+          <h1 class="hero-title" data-anim style="--d:120ms">${c.title}</h1>
+          <p class="hero-name" data-anim style="--d:240ms">${c.name}</p>
+          <p class="hero-date" data-anim style="--d:360ms">${c.date}</p>
+        </div>
+
+        <div class="hero-portrait" data-anim style="--d:0ms">
+          ${slot(IMAGES.heroPortrait,"hero-portrait","3/4","Her, small",true)}
+        </div>
+
+        <div class="sticker sticker--bubble"  data-anim style="--d:480ms">${DOODLES.bubble}</div>
+        <div class="sticker sticker--envelope" data-anim style="--d:600ms">${DOODLES.envelope}</div>
+        <div class="sticker sticker--hearts"  data-anim style="--d:720ms">${DOODLES.hearts}</div>
+
+        <p class="hero-note" data-anim style="--d:840ms">${c.note[0]}<br>${c.note[1]}</p>
+      </div>
+      ${hintEl("on-maroon")}
+    </div>
+  </section>`;
+}
+
+function sectionReasons(){
+  const r = CONTENT.reasons;
+  const cells = r.captions.map((cap,i) => `
+    <figure class="cell" data-anim style="--d:${i*110}ms">
+      <div class="frame">${slot(IMAGES.reasons[i], `reason-${i+1}`, "1/1", cap)}</div>
+      <figcaption>${cap}</figcaption>
+    </figure>`).join("");
+
+  return `
+  <section class="panel" id="reasons">
+    <div class="card">
+      <div class="paper cream"><span class="veins"></span></div>
+      <div class="stage">
+        <div class="reasons">
+          <div class="reasons-head" data-anim>
+            <span class="pill">${r.pill}</span>
+            <h2 class="reasons-title">${r.title}</h2>
+          </div>
+          <div class="grid">${cells}</div>
+        </div>
+      </div>
+      ${hintEl("on-cream")}
+    </div>
+  </section>`;
+}
+
+function sectionLetter(){
+  const l = CONTENT.letter;
+  const paras = l.paragraphs.map(p => `<p>${p}</p>`).join("");
+  const sign  = `<p class="signoff">${l.signoff.map(s=>`<span>${s}</span>`).join("")}</p>`;
+
+  const polas = stackLayout(IMAGES.polaroids.length).map((pos, i) => `
+    <div class="polaroid" data-anim
+         style="--d:${i*110}ms; --pw:${pos.width.toFixed(2)}cqh;
+                left:${pos.left}%; top:${pos.top.toFixed(2)}%;
+                width:${pos.width.toFixed(2)}cqh; transform:rotate(${pos.rot}deg)">
+      ${slot(IMAGES.polaroids[i], `polaroid-${i+1}`, "3/4", "Photo")}
+    </div>`).join("");
+
+  return `
+  <section class="panel" id="letter">
+    <div class="card">
+      <div class="paper maroon"></div><div class="grain"></div>
+      <div class="stage">
+        <div class="letter-wrap">
+
+          <div class="collage">
+            ${polas}
+            <div class="polaroid p-hero" data-anim style="--d:200ms">
+              ${slot(IMAGES.polaroidHero, "polaroid-hero", "2/3", "Photo")}
+            </div>
+            <div class="tape tape-a"></div>
+            <div class="tape tape-b"></div>
+            <div class="accent seal"   data-anim style="--d:520ms">${ACCENTS.seal}</div>
+            <div class="accent star-a" data-anim style="--d:600ms">${ACCENTS.bow}</div>
+            <div class="accent star-b" data-anim style="--d:680ms">${ACCENTS.star}</div>
+          </div>
+
+          <div class="letter">
+            <h2 class="letter-title" data-anim>${l.title}</h2>
+            <div class="letter-body" data-anim style="--d:160ms">${paras}${sign}</div>
+            <div class="more-wrap" data-anim style="--d:300ms">
+              <a class="more" href="${CONTENT.moreHref}">${CONTENT.more}</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function sectionGift(){
+  const g = CONTENT.gift;
+  return `
+  <section class="panel" id="gift">
+    <div class="card">
+      <div class="paper maroon"></div><div class="grain"></div>
+      <div class="stage">
+        <div class="gift" data-state="closed">
+
+          <p class="gift-kicker" data-anim>${g.kicker}</p>
+
+          <div class="gift-stage">
+            <div class="glow" data-anim style="--d:120ms"></div>
+            <div class="giftbox" data-anim style="--d:120ms" data-open-trigger>
+              ${BOX_BODY}${BOX_LID}
+              <div class="confetti" data-confetti></div>
+            </div>
+            <div class="gift-message" aria-live="polite">
+              <p class="gift-msg">${g.message.join("<br>")}</p>
+              <a class="gift-cta" href="${g.ctaHref}">${g.cta}</a>
+              <button class="gift-replay" type="button" data-replay>${g.replay}</button>
+            </div>
+          </div>
+
+          <button class="gift-open" type="button" data-open-trigger data-anim style="--d:240ms">${g.open}</button>
+
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+const deck = document.getElementById("deck");
+deck.innerHTML = sectionHero() + sectionReasons() + sectionLetter() + sectionGift();
+
+/* ============================================================================
+   BEHAVIOUR
+   ============================================================================ */
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+if (reduced){
+  document.querySelectorAll("[data-anim]").forEach(el => el.classList.add("in"));
+} else {
+  /* balloons drift up once, as the page opens */
+  document.getElementById("balloons").innerHTML = balloonsHTML();
+
+  /* Hero: fade in on load, staggered by the per-element --d. */
+  requestAnimationFrame(() => {
+    document.querySelectorAll("#hero [data-anim]").forEach(el => el.classList.add("in"));
+  });
+
+  /* Sections 2 & 3: reveal as they enter view. */
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries){
+      if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+    }
+  }, { threshold:.2 });
+  document.querySelectorAll("#reasons [data-anim], #letter [data-anim], #gift [data-anim]")
+    .forEach(el => io.observe(el));
+
+  /* Swipe hints fade once their section is scrolled past. */
+  const hintIO = new IntersectionObserver((entries) => {
+    for (const e of entries){
+      const hint = e.target.querySelector("[data-hint]");
+      if (hint) hint.classList.toggle("is-hidden", e.intersectionRatio < .75);
+    }
+  }, { threshold:[0,.75,1] });
+  ["#hero","#reasons"].forEach(sel => hintIO.observe(document.querySelector(sel)));
+}
+
+/* ---------- bubbles: pop on tap, then blow a new one ---------- */
+const bubbleLayer = document.getElementById("bubbles");
+bubbleLayer.innerHTML = bubblesHTML();
+
+bubbleLayer.addEventListener("click", e => {
+  const bubble = e.target.closest(".bubble");
+  if (!bubble || bubble.classList.contains("is-pop")) return;
+
+  bubble.classList.remove("is-new");
+  bubble.classList.add("is-pop");
+
+  /* click only fires on a tap, never on a swipe, so this can't fight the scroll */
+  setTimeout(() => {
+    const p = bubbleSpot();
+    bubble.style.setProperty("--x", p.x);
+    bubble.style.setProperty("--y", p.y);
+    bubble.style.setProperty("--w", p.w);
+    bubble.dataset.x = parseFloat(p.x);
+    bubble.dataset.y = parseFloat(p.y);
+    bubble.classList.remove("is-pop");
+    bubble.classList.add("is-new");
+    setTimeout(() => bubble.classList.remove("is-new"), 600);
+  }, reduced ? 0 : 460);
+});
+
+/* Bubbles shove away from the pointer and drift back when it leaves. The
+   nominal position comes from the element's own percentages, so this reads one
+   rect per frame instead of thirty. */
+if (!reduced){
+  const heroPanel = document.getElementById("hero");
+  const REACH = 175;   // px of influence around the pointer
+  const SHOVE = 82;    // px at the very centre of it
+
+  const nodes = [...bubbleLayer.querySelectorAll(".bubble")].map(el => ({ el, ox: 0, oy: 0 }));
+  let px = -1e4, py = -1e4, running = false;
+
+  const wake = () => { if (!running){ running = true; requestAnimationFrame(step); } };
+
+  heroPanel.addEventListener("pointermove", e => { px = e.clientX; py = e.clientY; wake(); });
+  heroPanel.addEventListener("pointerleave", () => { px = py = -1e4; wake(); });
+  heroPanel.addEventListener("pointercancel", () => { px = py = -1e4; wake(); });
+
+  function step(){
+    const box = bubbleLayer.getBoundingClientRect();
+    let settled = true;
+
+    for (const b of nodes){
+      const cx = box.left + (parseFloat(b.el.dataset.x) / 100) * box.width;
+      const cy = box.top  + (parseFloat(b.el.dataset.y) / 100) * box.height;
+
+      const dx = cx - px, dy = cy - py;
+      const dist = Math.hypot(dx, dy);
+
+      let tx = 0, ty = 0;
+      if (dist < REACH && dist > 0.01){
+        const push = (1 - dist / REACH) ** 1.6 * SHOVE;
+        tx = (dx / dist) * push;
+        ty = (dy / dist) * push;
+      }
+
+      b.ox += (tx - b.ox) * 0.16;      // ease toward the target, so it springs
+      b.oy += (ty - b.oy) * 0.16;
+
+      if (Math.abs(b.ox) > 0.2 || Math.abs(b.oy) > 0.2) settled = false;
+      b.el.style.transform = `translate(${b.ox.toFixed(2)}px, ${b.oy.toFixed(2)}px)`;
+    }
+
+    if (settled && px < -1000){ running = false; return; }   // idle: stop burning frames
+    requestAnimationFrame(step);
+  }
+}
+
+/* ---------- the gift ---------- */
+const gift      = document.querySelector(".gift");
+const confetti  = gift.querySelector("[data-confetti]");
+const openBtn   = gift.querySelector(".gift-open");
+
+/* 24 pieces max: squares, circles and thin rectangles in cream, gold, blush */
+function buildConfetti(){
+  const colors = ["#F2E8E4", "#C9A227", "#F7DDDD", "#D9B443", "#EBD9D4"];
+  let html = "";
+  for (let i = 0; i < 24; i++){
+    const shape = i % 3;                                  // 0 square, 1 circle, 2 strip
+    const size  = rand(5, 9);
+    const w = shape === 2 ? rand(2.5, 4)  : size;
+    const h = shape === 2 ? rand(10, 15)  : size;
+    const r = shape === 1 ? "50%" : "1px";
+    html += `<i class="piece" style="
+      --w:${w.toFixed(1)}px; --h:${h.toFixed(1)}px; --r:${r};
+      --c:${colors[i % colors.length]};
+      --dx:${rand(-150,150).toFixed(0)}px;
+      --rise:${rand(-160,-80).toFixed(0)}px;
+      --fall:${rand(170,270).toFixed(0)}px;
+      --rot:${rand(-320,320).toFixed(0)}deg;
+      --dur:${rand(.9,1.5).toFixed(2)}s;
+      --delay:${rand(0,.18).toFixed(2)}s;"></i>`;
+  }
+  confetti.innerHTML = html;
+}
+
+function openGift(){
+  if (gift.dataset.state === "open") return;
+  if (!reduced) buildConfetti();                 // no confetti under reduced motion
+  gift.dataset.state = "open";
+  openBtn.disabled = true;
+}
+
+function resetGift(){
+  gift.dataset.state = "closed";
+  confetti.innerHTML = "";
+  openBtn.disabled = false;
+  void gift.offsetWidth;                         // reflow, so the animations re-run
+}
+
+gift.querySelectorAll("[data-open-trigger]").forEach(el => el.addEventListener("click", openGift));
+gift.querySelector("[data-replay]").addEventListener("click", resetGift);
+
+/* in-page targets (the letter's "One more thing") scroll the deck instead of navigating */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener("click", e => {
+    const target = document.querySelector(a.getAttribute("href"));
+    if (!target) return;
+    e.preventDefault();
+    deck.scrollTo({ top: target.offsetTop, behavior: reduced ? "auto" : "smooth" });
+  });
+});
+</script>
+</body>
+</html>

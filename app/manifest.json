@@ -1,0 +1,25 @@
+{
+  "name": "Lists",
+  "short_name": "Lists",
+  "description": "Somewhere to put them.",
+  "start_url": "/app/",
+  "scope": "/app/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5F2EB",
+  "theme_color": "#6B0F0F",
+  "icons": [
+    {
+      "src": "/app/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/app/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
