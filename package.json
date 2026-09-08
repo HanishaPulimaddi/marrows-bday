@@ -1,0 +1,24 @@
+{
+  "name": "marrow's-bday",
+  "version": "1.0.0",
+  "description": "A four-section, full-screen vertical scroll experience — hero, reasons, letter,\r and a gift box that opens. Static, no build step, no dependencies. Deploys to\r Cloudflare Pages as-is.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HanishaPulimaddi/marrows-bday.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/HanishaPulimaddi/marrows-bday/issues"
+  },
+  "homepage": "https://github.com/HanishaPulimaddi/marrows-bday#readme",
+  "devDependencies": {
+    "wrangler": "^4.129.0"
+  }
+}

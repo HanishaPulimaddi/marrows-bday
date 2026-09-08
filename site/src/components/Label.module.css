@@ -1,0 +1,13 @@
+.label {
+  display: inline-block;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+
+.sm { font-size: 10px; letter-spacing: .34em; }

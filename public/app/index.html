@@ -50,6 +50,16 @@
 
 <!-- composer sits in the lower half, within thumb reach -->
 <form class="composer" id="composer" autocomplete="off">
+
+  <!-- asks only when tapped; a prompt on load gets denied, and denial is forever -->
+  <button class="rem-prompt" id="remPrompt" type="button" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>
+    </svg>
+    turn on reminders
+  </button>
+
   <textarea class="input" id="text" rows="1" placeholder="what do you need to remember?"
             enterkeyhint="enter" aria-label="Note"></textarea>
 
@@ -64,6 +74,8 @@
 
     <button class="save" id="save" type="submit">save</button>
   </div>
+
+  <p class="rem-off" id="remDenied" hidden>reminders are off — enable notifications for this app in Chrome settings</p>
 </form>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden>

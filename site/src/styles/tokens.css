@@ -1,0 +1,30 @@
+:root {
+  /* ---- colour ---- */
+  --wine-900: #1B0507;
+  --wine-800: #2B0709;
+  --wine-700: #430609;
+  --wine-600: #6E0D12;
+  --wine-500: #8B1116;
+  --wine-400: #9A161C;
+  --ember:    #C2151C;
+
+  --cream:     #F6F1E6;
+  --paper:     #FBF6EC;
+  --ink:       #33291F;
+  --blush:     #F0A9A5;
+  --off-white: #F4E7E4;
+
+  --rule-dark:  rgba(255, 255, 255, .18);
+  --rule-light: #D8CDBB;
+
+  /* ---- type ---- */
+  --font-display: 'Italiana', 'Cormorant Garamond', Georgia, serif;
+  --font-serif:   'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-romance: 'Cormorant Garamond', Georgia, serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-ui:      'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* ---- motion ---- */
+  --ease-reveal: cubic-bezier(.22, .61, .36, 1);
+  --reveal-ms: 600ms;
+}

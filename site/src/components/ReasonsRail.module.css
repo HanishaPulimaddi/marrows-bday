@@ -1,0 +1,132 @@
+.reasons {
+  display: grid;
+  /* minmax(0,1fr), not 1fr: the rail's content is wider than the screen, and a
+     default grid column refuses to shrink below it - which dragged the footer
+     off the right edge */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  gap: 34px;
+  padding: 64px;
+  background:
+    radial-gradient(90% 70% at 20% 0%, var(--wine-600) 0%, var(--wine-800) 60%),
+    var(--wine-800);
+  overflow: hidden;
+}
+
+/* ---- header ---- */
+.header { display: flex; flex-direction: column; gap: 10px; }
+
+.eyebrow {
+  letter-spacing: .32em;
+  color: var(--cream);
+  opacity: .55;
+}
+
+.headline {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 84px;
+  line-height: 1;
+  color: #F8EAE7;
+}
+
+.accent {
+  font-style: italic;
+  color: var(--blush);
+}
+
+/* ---- rail ---- */
+.railWrap { min-height: 0; min-width: 0; display: flex; align-items: flex-start; }
+
+.rail {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+  width: 100%;
+  padding-bottom: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+  overscroll-behavior-x: contain;
+}
+
+.rail::-webkit-scrollbar { display: none; }
+
+.rail.dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+  user-select: none;
+}
+
+.card {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  transition: transform 200ms ease;
+}
+
+/* ragged filmstrip: every second card drops */
+.card:nth-child(even) { margin-top: 56px; }
+
+/* alternating widths */
+.card:nth-child(odd)  { width: 300px; }
+.card:nth-child(even) { width: 240px; }
+
+.card .photoFrame { transition: filter 200ms ease; }
+
+.card:hover,
+.card:focus-within { transform: translateY(-6px); }
+
+.card:hover .photoFrame,
+.card:focus-within .photoFrame { filter: brightness(1.12); }
+
+.rail.dragging .card:hover { transform: none; }
+
+/* ---- footer ---- */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, .18);
+}
+
+.status,
+.dragCue { color: var(--cream); opacity: .55; }
+
+.status {
+  letter-spacing: .28em;
+  /* the upcoming reasons can run long; keep it to one line rather than let it
+     wrap into the drag cue */
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dragCue { white-space: nowrap; }
+
+/* ---------------------------------------------------------------- small --- */
+@media (max-width: 768px) {
+  .reasons { padding: 32px; gap: 24px; }
+  .headline { font-size: clamp(44px, 13vw, 64px); }
+
+  .railWrap { align-items: center; }
+
+  .rail {
+    gap: 16px;
+    scroll-snap-type: x mandatory;
+    cursor: auto;
+  }
+
+  .card:nth-child(odd),
+  .card:nth-child(even) { width: 78vw; margin-top: 0; }
+
+  .footer { padding-top: 14px; }
+  .status { letter-spacing: .2em; }
+}

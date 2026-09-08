@@ -1,0 +1,82 @@
+@import './tokens.css';
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--wine-900);
+  color: var(--off-white);
+  font-family: var(--font-ui);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img { display: block; max-width: 100%; }
+
+:focus-visible {
+  outline: 2px solid var(--blush);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ---------------------------------------------------------------- deck ---- */
+/* one page per screen, snapped */
+.deck {
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+.page {
+  position: relative;
+  min-height: 100dvh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* a section that outgrows the viewport must not fight the snap */
+@media (max-width: 900px) {
+  .deck { scroll-snap-type: y proximity; }
+}
+
+/* -------------------------------------------------------------- reveal ---- */
+/* Uses the independent `translate` property, not `transform`, so a component
+   is still free to own its own transform (the rotated edge label, the floating
+   lamp) without the reveal overwriting it. */
+[data-reveal] {
+  opacity: 0;
+  translate: 0 24px;
+}
+
+[data-reveal][data-revealed='true'] {
+  opacity: 1;
+  translate: none;
+  transition:
+    opacity var(--reveal-ms) var(--ease-reveal) var(--reveal-delay, 0ms),
+    translate var(--reveal-ms) var(--ease-reveal) var(--reveal-delay, 0ms);
+}
+
+/* ------------------------------------------------------ reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  .deck { scroll-behavior: auto; }
+
+  [data-reveal] {
+    opacity: 1 !important;
+    translate: none !important;
+  }
+}

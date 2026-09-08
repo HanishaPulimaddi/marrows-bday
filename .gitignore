@@ -1,0 +1,6 @@
+node_modules/
+.wrangler/
+
+# local secrets - VAPID_PRIVATE_KEY lives here. Never commit this.
+.dev.vars
+.dev.vars.*

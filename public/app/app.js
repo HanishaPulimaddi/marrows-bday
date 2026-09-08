@@ -56,9 +56,122 @@ async function updateNote(id, patch){
   return putNote({ ...note, ...patch, updatedAt: Date.now() });
 }
 
-/* soft delete, so undo is just a flag flip (and phase 3 gets its tombstone) */
+/* soft delete, so undo is just a flag flip, and the D1 row can be dropped */
 const softDelete = id => updateNote(id, { deleted: true });
 const restore    = id => updateNote(id, { deleted: false });
+
+/* sync bookkeeping only - deliberately does NOT touch updatedAt */
+async function markPending(id, pendingSync){
+  const db = await dbp;
+  const note = await db.get(STORE, id);
+  if (!note || note.pendingSync === pendingSync) return;
+  await db.put(STORE, { ...note, pendingSync });
+}
+
+/* every row, tombstones included - a delete still has to reach the server */
+async function everyNote(){
+  const db = await dbp;
+  return db.getAll(STORE);
+}
+
+/* ============================================================================
+   Sync — IndexedDB is the truth for display, D1 is only the delivery queue.
+   The local write has already happened by the time any of this runs; if the
+   network is down the note is simply flagged and retried later.
+   ============================================================================ */
+const SUB_KEY = 'subscriptionId';
+const subscriptionId = () => { try { return localStorage.getItem(SUB_KEY); } catch { return null; } };
+
+async function syncNote(note){
+  /* a row should exist only for a live note that has a time on it */
+  const wantsRow = !note.deleted && note.dueAt != null;
+  const url = `/api/reminders/${encodeURIComponent(note.id)}`;
+
+  try {
+    const res = wantsRow
+      ? await fetch(url, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: note.text,
+            dueAt: note.dueAt,              // epoch ms, straight through
+            subscriptionId: subscriptionId(),
+            createdAt: note.createdAt,
+            updatedAt: note.updatedAt
+          })
+        })
+      : await fetch(url, { method: 'DELETE' });
+
+    if (!res.ok) throw new Error(String(res.status));
+    await markPending(note.id, false);
+    return true;
+  } catch (err) {
+    console.warn('[sync] queued for retry:', note.id, err.message);
+    await markPending(note.id, true);
+    return false;
+  }
+}
+
+/* a brand new note with no time never touches the server at all */
+const syncIfRelevant = note =>
+  (note.dueAt != null || note.pendingSync) ? syncNote(note) : Promise.resolve(true);
+
+let flushing = false;
+async function flushPending(){
+  if (flushing || !navigator.onLine) return;
+  flushing = true;
+  try {
+    const stuck = (await everyNote()).filter(n => n.pendingSync);
+    if (!stuck.length) return;
+    console.log(`[sync] retrying ${stuck.length}`);
+    let changed = false;
+    for (const note of stuck) if (await syncNote(note)) changed = true;
+    if (changed) await render();
+  } finally {
+    flushing = false;
+  }
+}
+
+/* ---- push subscription: same flow as the push test, reused ---- */
+function urlBase64ToUint8Array(base64){
+  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+  const raw = atob(padded.replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+
+const pushSupported = () =>
+  'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+
+async function ensureSubscription(){
+  if (!pushSupported() || Notification.permission !== 'granted') return null;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub){
+      const res = await fetch('/api/vapid-public-key');
+      const { key } = await res.json();
+      if (!key) throw new Error('worker returned no VAPID key');
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(key)
+      });
+    }
+    const saved = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sub)
+    }).then(r => r.json());
+
+    if (saved?.id){
+      try { localStorage.setItem(SUB_KEY, saved.id); } catch {}
+      return saved.id;
+    }
+    return null;
+  } catch (err) {
+    console.warn('[push] could not subscribe:', err.message);
+    return null;
+  }
+}
 
 /* ============================================================================
    Time — display only, always via Intl, always in the viewer's local zone
@@ -124,7 +237,8 @@ const els = {
   composer: $('composer'), text: $('text'),
   remindOn: $('remindOn'), when: $('when'), save: $('save'),
   toast: $('toast'), toastText: $('toastText'), undo: $('undo'),
-  install: $('install'), installYes: $('installYes'), installNo: $('installNo')
+  install: $('install'), installYes: $('installYes'), installNo: $('installNo'),
+  remPrompt: $('remPrompt'), remDenied: $('remDenied')
 };
 
 let editingId = null;   // note currently expanded for editing
@@ -132,6 +246,10 @@ let editingId = null;   // note currently expanded for editing
 const CLOCK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
   <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
+
+const BELL_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>`;
 
 function autogrow(el, max = Infinity){
   el.style.height = 'auto';
@@ -163,6 +281,19 @@ function noteEl(note, isPast){
     due.innerHTML = CLOCK_ICON;
     due.append(document.createTextNode(friendlyTime(note.dueAt)));
     li.append(due);
+
+    const bell = document.createElement('span');
+    bell.className = 'bell';
+    bell.title = 'reminder set';
+    bell.innerHTML = BELL_ICON;
+    li.append(bell);
+  }
+
+  if (note.pendingSync){
+    const pending = document.createElement('span');
+    pending.className = 'pending';
+    pending.textContent = 'syncing';
+    li.append(pending);
   }
 
   const kill = document.createElement('button');
@@ -232,12 +363,14 @@ function editorEl(note){
   save.addEventListener('click', async () => {
     const body = ta.value.trim();
     if (!body){ removeNote(note); return; }
-    await updateNote(note.id, {
+    const updated = await updateNote(note.id, {
       text: body,
       dueAt: cb.checked ? fromLocalInput(when.value) : null
     });
     editingId = null;
     await render();
+    /* PUT if it still has a time, DELETE if the time was taken off */
+    if (updated) syncIfRelevant(updated).then(render);
   });
 
   actions.append(cancel, save);
@@ -290,9 +423,14 @@ function showToast(message, onUndo){
 
 async function removeNote(note){
   if (editingId === note.id) editingId = null;
-  await softDelete(note.id);
+  const gone = await softDelete(note.id);
   await render();
-  showToast('deleted', () => restore(note.id));
+  if (note.dueAt != null && gone) syncNote(gone).then(render);
+
+  showToast('deleted', async () => {
+    const back = await restore(note.id);
+    if (back && back.dueAt != null) syncNote(back).then(render);
+  });
 }
 
 /* ---------------------------------------------------------------- compose - */
@@ -313,7 +451,7 @@ els.composer.addEventListener('submit', async e => {
   const text = els.text.value.trim();
   if (!text) return;
 
-  await createNote(text, els.remindOn.checked ? fromLocalInput(els.when.value) : null);
+  const created = await createNote(text, els.remindOn.checked ? fromLocalInput(els.when.value) : null);
 
   els.text.value = '';
   els.remindOn.checked = false;
@@ -323,12 +461,48 @@ els.composer.addEventListener('submit', async e => {
   syncSaveState();
   await render();
   els.scroll.scrollTo({ top: 0 });
+
+  /* the note is already saved locally; the server is best effort from here */
+  if (created.dueAt != null) syncNote(created).then(render);
 });
 
 /* notes cross into "done" on their own, without a reload */
 setInterval(() => { if (!editingId) render(); }, 30000);
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && !editingId) render();
+});
+
+/* ------------------------------------------------------------- reminders - */
+/* Never prompt on load. A dialog she didn't ask for gets dismissed, and a
+   denied permission cannot be asked for again. */
+function refreshReminderUI(){
+  if (!pushSupported()){
+    els.remPrompt.hidden = true;
+    els.remDenied.hidden = true;
+    return;
+  }
+  const state = Notification.permission;
+  els.remPrompt.hidden = state !== 'default';
+  els.remDenied.hidden = state !== 'denied';
+}
+
+els.remPrompt.addEventListener('click', async () => {
+  els.remPrompt.disabled = true;
+  try {
+    const permission = await Notification.requestPermission();
+    refreshReminderUI();
+    if (permission !== 'granted') return;
+
+    await ensureSubscription();
+
+    /* everything already queued was stored without a subscriptionId - resend
+       them now so the sweep knows where to deliver */
+    const withTimes = (await everyNote()).filter(n => !n.deleted && n.dueAt != null);
+    for (const note of withTimes) await syncNote(note);
+    await render();
+  } finally {
+    els.remPrompt.disabled = false;
+  }
 });
 
 /* ---------------------------------------------------------------- install - */
@@ -375,4 +549,19 @@ if ('serviceWorker' in navigator){
 
 syncSaveState();
 autogrow(els.text);
-render();
+refreshReminderUI();
+
+render().then(async () => {
+  /* if she already said yes, make sure the subscription is current, then push
+     anything that failed to reach the server last time */
+  if (pushSupported() && Notification.permission === 'granted'){
+    await ensureSubscription();
+  }
+  await flushPending();
+});
+
+/* retry the moment the network comes back, and whenever the app is reopened */
+window.addEventListener('online', flushPending);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) flushPending();
+});

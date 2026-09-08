@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>push test</title>
+<style>
+  :root{ --maroon:#6B0F0F; --ink:#22201f; --dim:#6b6663; --line:#dcd6d2; }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:22px 18px 40px;
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    color:var(--ink); background:#f7f5f2;
+  }
+  h1{font-size:1.1rem;margin:0 0 18px;letter-spacing:.02em}
+  button{
+    width:100%; padding:15px 18px; margin-bottom:10px;
+    font:inherit; font-weight:500; color:#fff; background:var(--maroon);
+    border:0; border-radius:10px; cursor:pointer;
+  }
+  button:disabled{opacity:.4;cursor:default}
+  dl{
+    margin:20px 0 0; padding:14px 16px;
+    background:#fff; border:1px solid var(--line); border-radius:10px;
+    display:grid; grid-template-columns:auto 1fr; gap:8px 14px;
+  }
+  dt{color:var(--dim);font-size:.8rem;letter-spacing:.04em}
+  dd{margin:0;font-size:.82rem;word-break:break-all;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .ok{color:#1a7a3c} .bad{color:#a11} .wait{color:#8a6a18}
+  h2{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin:22px 0 8px}
+  #log{
+    margin:0; padding:12px 14px; min-height:120px;
+    background:#fff; border:1px solid var(--line); border-radius:10px;
+    font:12px/1.6 ui-monospace,Menlo,Consolas,monospace;
+    white-space:pre-wrap; word-break:break-word;
+  }
+</style>
+</head>
+<body>
+
+<h1>push test</h1>
+
+<button id="enable" type="button">enable notifications</button>
+<button id="send" type="button" disabled>send me a notification</button>
+
+<dl>
+  <dt>permission</dt>   <dd id="s-perm">–</dd>
+  <dt>service worker</dt><dd id="s-sw">–</dd>
+  <dt>subscription</dt> <dd id="s-sub">–</dd>
+  <dt>endpoint</dt>     <dd id="s-endpoint">–</dd>
+  <dt>capabilities</dt> <dd id="s-caps">–</dd>
+  <dt>context</dt>      <dd id="s-context">–</dd>
+  <dt>browser</dt>      <dd id="s-ua">–</dd>
+</dl>
+
+<h2>log</h2>
+<pre id="log"></pre>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function log(msg){
+  const t = new Date().toTimeString().slice(0, 8);
+  $('log').textContent += `${t}  ${msg}\n`;
+  $('log').scrollTop = $('log').scrollHeight;
+}
+
+function set(id, text, cls){
+  const el = $(id);
+  el.textContent = text;
+  el.className = cls || '';
+}
+
+/* base64url -> Uint8Array, for applicationServerKey */
+function urlBase64ToUint8Array(base64){
+  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+  const raw = atob(padded.replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+
+/* Push needs all three of these. If PushManager is missing the browser or the
+   context is the problem, not the page - say which. */
+function capabilities(){
+  const caps = {
+    serviceWorker: 'serviceWorker' in navigator,
+    PushManager:   'PushManager' in window,
+    Notification:  'Notification' in window
+  };
+  const missing = Object.entries(caps).filter(([, ok]) => !ok).map(([k]) => k);
+  set('s-caps', Object.entries(caps).map(([k, ok]) => `${ok ? '✓' : '✗'} ${k}`).join('   '),
+      missing.length ? 'bad' : 'ok');
+
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const ua = navigator.userAgent;
+  const inApp = /(FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|Snapchat|MicroMessenger|GSA)/i.test(ua);
+  const iOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  set('s-context',
+      `${location.protocol}  secure=${window.isSecureContext}  installed=${standalone}` +
+      (inApp ? '  IN-APP BROWSER' : ''),
+      window.isSecureContext ? '' : 'bad');
+  set('s-ua', ua);
+
+  return { caps, missing, standalone, inApp, iOS };
+}
+
+/* why is PushManager missing? name the usual suspects */
+function explainMissingPush(info){
+  if (info.inApp)
+    return 'this is an in-app browser (opened from another app). Open the link in Chrome itself.';
+  if (info.iOS && !info.standalone)
+    return 'iOS only exposes push to an installed PWA. Share > Add to Home Screen, then open it from the icon.';
+  if (info.iOS)
+    return 'iOS needs 16.4 or newer for web push.';
+  if (!window.isSecureContext)
+    return 'the page is not a secure context. Push needs https (or localhost).';
+  return 'this browser does not expose PushManager. Try Chrome.';
+}
+
+async function refresh(){
+  capabilities();
+  if (!('Notification' in window)){ set('s-perm', 'Notification API missing', 'bad'); return; }
+  set('s-perm', Notification.permission,
+      Notification.permission === 'granted' ? 'ok'
+      : Notification.permission === 'denied' ? 'bad' : 'wait');
+
+  if (!('serviceWorker' in navigator)){
+    set('s-sw', 'unsupported in this browser', 'bad');
+    return;
+  }
+
+  const reg = await navigator.serviceWorker.getRegistration('/');
+  if (!reg){
+    set('s-sw', 'not registered', 'wait');
+    set('s-sub', 'none', 'wait');
+    set('s-endpoint', '–');
+    $('send').disabled = true;
+    return;
+  }
+
+  const state = reg.active ? 'active' : reg.installing ? 'installing' : 'waiting';
+  set('s-sw', `${state} (scope ${reg.scope})`, reg.active ? 'ok' : 'wait');
+
+  const sub = await reg.pushManager.getSubscription();
+  if (sub){
+    set('s-sub', 'subscribed', 'ok');
+    set('s-endpoint', sub.endpoint);
+    $('send').disabled = false;
+  } else {
+    set('s-sub', 'not subscribed', 'wait');
+    set('s-endpoint', '–');
+    $('send').disabled = true;
+  }
+}
+
+$('enable').addEventListener('click', async () => {
+  $('enable').disabled = true;
+  try {
+    const info = capabilities();
+    if (!info.caps.serviceWorker) throw new Error('no service worker support - ' + explainMissingPush(info));
+    if (!info.caps.Notification)  throw new Error('no Notification API - ' + explainMissingPush(info));
+    if (!info.caps.PushManager)   throw new Error('no push support - ' + explainMissingPush(info));
+
+    log('asking for permission…');
+    const permission = await Notification.requestPermission();
+    log(`permission: ${permission}`);
+    await refresh();
+    if (permission !== 'granted'){
+      log(permission === 'denied'
+        ? 'blocked — clear it in site settings, the prompt will not come back'
+        : 'dismissed without choosing');
+      return;
+    }
+
+    log('registering /sw.js…');
+    const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    await navigator.serviceWorker.ready;
+    log(`service worker ready (scope ${reg.scope})`);
+    await refresh();
+
+    log('fetching VAPID public key…');
+    const res = await fetch('/api/vapid-public-key');
+    if (!res.ok) throw new Error(`key fetch failed: ${res.status}`);
+    const { key, error } = await res.json();
+    if (!key) throw new Error(error || 'worker returned no key');
+    log(`key: ${key.slice(0, 22)}… (${key.length} chars)`);
+
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub){
+      log('subscribing…');
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(key)
+      });
+      log('subscribed');
+    } else {
+      log('already subscribed, reusing it');
+    }
+    await refresh();
+
+    log('POST /api/subscribe…');
+    const save = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sub)
+    });
+    const saved = await save.json().catch(() => ({}));
+    log(`subscribe -> ${save.status} ${JSON.stringify(saved)}`);
+    if (save.ok) log('ready — now press send');
+
+  } catch (err) {
+    log(`ERROR: ${err.message}`);
+  } finally {
+    $('enable').disabled = false;
+    refresh();
+  }
+});
+
+$('send').addEventListener('click', async () => {
+  $('send').disabled = true;
+  try {
+    log('POST /api/testpush…');
+    const res = await fetch('/api/testpush', { method: 'POST' });
+    const body = await res.json().catch(() => ({}));
+    log(`testpush -> ${res.status}`);
+    log(JSON.stringify(body, null, 1));
+    if (body.results){
+      for (const r of body.results){
+        log(r.status === 201 || r.status === 200
+          ? `push accepted (${r.status})`
+          : `push NOT accepted: ${r.status} ${r.body || r.error || ''}`);
+      }
+    }
+  } catch (err) {
+    log(`ERROR: ${err.message}`);
+  } finally {
+    $('send').disabled = false;
+    refresh();
+  }
+});
+
+navigator.serviceWorker?.addEventListener('message', e => log(`sw message: ${JSON.stringify(e.data)}`));
+
+refresh();
+log('ready. press "enable notifications".');
+</script>
+</body>
+</html>

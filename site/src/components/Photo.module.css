@@ -1,0 +1,50 @@
+.figure { margin: 0; display: flex; flex-direction: column; }
+
+.frame {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .18);
+  background: transparent;
+}
+
+/* swapping in a real photo is the one line below */
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, .08) 0 8px,
+    rgba(255, 255, 255, .16) 8px 16px
+  );
+}
+
+.tag {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 10px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: rgba(246, 241, 230, .55);
+}
+
+.caption {
+  margin: 18px 0 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 28px;
+  line-height: 1.15;
+  color: #F8EAE7;
+}
+
+@media (max-width: 768px) {
+  .caption { font-size: 24px; }
+}

@@ -5,14 +5,15 @@
    thing to waste an afternoon: the version string is what forces the new shell
    to install and the old caches to be thrown away.
    ============================================================================ */
-const VERSION = 'v1';
+const VERSION = 'v3';
 
 const SHELL_CACHE = `lists-shell-${VERSION}`;
 const FONT_CACHE  = `lists-fonts-${VERSION}`;
 
 const SHELL = [
+  /* NOT '/app/index.html' - Cloudflare's asset server 307s it to '/app/', and a
+     cached redirected response cannot be returned for a navigation. */
   '/app/',
-  '/app/index.html',
   '/app/app.css',
   '/app/app.js',
   '/app/vendor/idb.js',
@@ -61,6 +62,69 @@ self.addEventListener('message', event => {
   if (event.data === 'skipWaiting') self.skipWaiting();
 });
 
+/* ============================================================================
+   Push
+
+   The app subscribes through THIS registration, so reminder pushes land here.
+
+   EVERY push event has to end in a showNotification() call. A push that shows
+   nothing counts against the origin and Chrome will eventually revoke the
+   subscription - so a malformed or empty payload still gets a notification,
+   just a generic one.
+   ============================================================================ */
+self.addEventListener('push', event => {
+  event.waitUntil((async () => {
+    let title = 'Reminder';
+    let options = {
+      body: 'You have something due.',
+      icon: '/app/icons/icon-192.png',
+      badge: '/app/icons/icon-192.png',
+      tag: 'reminder',
+      renotify: true,
+      data: { url: '/app' }
+    };
+
+    try {
+      const raw = event.data ? event.data.text() : '';
+      if (raw){
+        const payload = JSON.parse(raw);
+        if (typeof payload.title === 'string' && payload.title.trim())
+          title = payload.title.trim();
+        if (typeof payload.body === 'string' && payload.body.trim())
+          options.body = payload.body.trim();
+        /* the note id, so a re-send replaces rather than stacks */
+        if (typeof payload.tag === 'string' && payload.tag) options.tag = payload.tag;
+        if (payload.url) options.data.url = payload.url;
+      }
+    } catch (err) {
+      console.warn('[sw] push payload was not usable:', err);
+    }
+
+    try {
+      await self.registration.showNotification(title, options);
+    } catch (err) {
+      console.warn('[sw] showNotification failed, retrying bare:', err);
+      await self.registration.showNotification(title);
+    }
+  })());
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || '/app';
+
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of windows){
+      if (new URL(client.url).pathname.startsWith('/app')){
+        await client.focus();
+        return;
+      }
+    }
+    await self.clients.openWindow(target);
+  })());
+});
+
 self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -70,10 +134,10 @@ self.addEventListener('fetch', event => {
   // navigations: serve the cached shell first so a cold offline start works
   if (req.mode === 'navigate' && url.origin === location.origin) {
     event.respondWith((async () => {
-      const cached = await safeMatch('/app/index.html');
+      const cached = await safeMatch('/app/');
       if (cached) {
         refresh(req, SHELL_CACHE);   // freshen in the background
-        return cached;
+        return stripRedirect(cached);
       }
       try { return await fetch(req); }
       catch { return new Response('Offline', { status: 503, statusText: 'Offline' }); }
@@ -104,7 +168,7 @@ self.addEventListener('fetch', event => {
       if (cached) { refresh(req, SHELL_CACHE); return cached; }
       try {
         const res = await fetch(req);
-        if (res.ok) safePut(SHELL_CACHE, req, res.clone());
+        if (res.ok && !res.redirected) safePut(SHELL_CACHE, req, res.clone());
         return res;
       } catch {
         return Response.error();
@@ -115,8 +179,19 @@ self.addEventListener('fetch', event => {
 
 function refresh(request, cacheName){
   fetch(request)
-    .then(res => { if (res && res.ok) safePut(cacheName, request, res.clone()); })
+    .then(res => { if (res && res.ok && !res.redirected) safePut(cacheName, request, res.clone()); })
     .catch(() => { /* offline: the cached copy stands */ });
+}
+
+/* Chrome rejects a navigation answered with a response whose `redirected` flag
+   is set - "a response served by a service worker has redirections". Rebuilding
+   the response drops the flag while keeping the body and headers. */
+async function stripRedirect(res){
+  if (!res || !res.redirected) return res;
+  const body = await res.arrayBuffer();
+  return new Response(body, {
+    status: res.status, statusText: res.statusText, headers: res.headers
+  });
 }
 
 /* CacheStorage can throw outright; a failed cache read must degrade to a
