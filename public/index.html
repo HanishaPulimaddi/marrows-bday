@@ -638,138 +638,6 @@ body{
 }
 
 /* ============================================================
-   SECTION 4 — THE GIFT
-   ============================================================ */
-.gift{
-  height:100%;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:clamp(18px,4vh,34px);
-  padding:clamp(20px,6vw,48px);
-  text-align:center;
-}
-.gift-kicker{
-  font-family:var(--serif);font-style:italic;font-weight:400;
-  font-size:clamp(.95rem,4vw,1.35rem);
-  letter-spacing:.06em;color:var(--ink-dim);margin:0;
-}
-
-/* box and message share one cell, so the text arrives in the box's place */
-.gift-stage{
-  position:relative;
-  display:grid;
-  place-items:center;
-  width:100%;
-  min-height:clamp(210px,34vh,320px);
-}
-.gift-stage > *{grid-area:1/1}
-
-.glow{
-  width:clamp(190px,58vw,300px);
-  aspect-ratio:1;
-  border-radius:50%;
-  background:radial-gradient(circle, rgba(201,162,39,.32) 0%, rgba(201,162,39,.13) 42%, transparent 70%);
-  animation:gift-glow 3s ease-in-out infinite;
-  pointer-events:none;
-}
-.giftbox{
-  position:relative;
-  width:clamp(140px,44vw,220px);
-  aspect-ratio:200/170;
-  cursor:pointer;
-  animation:gift-breathe 3s ease-in-out infinite;
-}
-.giftbox svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible}
-.box-lid{transform-origin:50% 38%}
-
-@keyframes gift-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
-@keyframes gift-glow{0%,100%{opacity:.55;transform:scale(.96)}50%{opacity:1;transform:scale(1.06)}}
-
-.gift-open{
-  font-family:var(--sans);font-weight:300;
-  font-size:clamp(.62rem,2.7vw,.8rem);
-  letter-spacing:.2em;text-transform:uppercase;
-  color:var(--ink);background:none;
-  border:1px solid rgba(242,232,228,.42);
-  border-radius:999px;padding:.7em 1.7em;cursor:pointer;
-  transition:background .3s ease,border-color .3s ease,opacity .25s ease;
-}
-.gift-open:hover,.gift-open:focus-visible{
-  background:rgba(242,232,228,.12);border-color:rgba(242,232,228,.75);
-}
-
-/* --- confetti: 24 pieces, transforms + opacity only --- */
-.confetti{position:absolute;inset:0;pointer-events:none;z-index:4}
-.piece{
-  position:absolute;left:50%;top:33%;
-  width:var(--w);height:var(--h);
-  background:var(--c);border-radius:var(--r,0);
-  opacity:0;will-change:transform,opacity;
-}
-
-/* --- the message that replaces the box --- */
-.gift-message{
-  display:flex;flex-direction:column;align-items:center;
-  gap:clamp(14px,3vh,24px);
-  visibility:hidden;
-  z-index:3;
-}
-.gift-msg{
-  font-family:var(--serif);font-weight:400;
-  font-size:clamp(1.05rem,4.8vw,1.7rem);
-  line-height:1.55;letter-spacing:.01em;
-  color:var(--ink);margin:0;max-width:26ch;text-wrap:balance;
-}
-.gift-msg em{font-style:italic}
-.gift-cta{
-  display:inline-block;
-  font-family:var(--sans);font-weight:300;
-  font-size:clamp(.6rem,2.6vw,.8rem);
-  letter-spacing:.18em;text-transform:uppercase;
-  color:var(--ink);text-decoration:none;
-  border:1px solid rgba(242,232,228,.42);
-  border-radius:999px;padding:.7em 1.5em;
-  transition:background .3s ease,border-color .3s ease,transform .3s ease;
-}
-.gift-cta:hover,.gift-cta:focus-visible{
-  background:rgba(242,232,228,.12);border-color:rgba(242,232,228,.75);transform:translateY(-2px);
-}
-.gift-replay{
-  font-family:var(--sans);font-weight:300;
-  font-size:clamp(.55rem,2.3vw,.7rem);
-  letter-spacing:.14em;text-transform:lowercase;
-  color:var(--ink-dim);background:none;border:0;padding:.3em;
-  cursor:pointer;text-decoration:underline;text-underline-offset:3px;
-}
-.gift-replay:hover,.gift-replay:focus-visible{color:var(--ink)}
-.gift-msg,.gift-cta,.gift-replay{opacity:0;transform:translateY(10px)}
-
-/* --- opened state: the whole sequence, done inside 2s --- */
-.gift[data-state="open"] .giftbox{animation:none;cursor:default}
-.gift[data-state="open"] .glow{animation:none;opacity:0;transition:opacity .5s ease}
-.gift[data-state="open"] .box-lid{animation:lid-fly .95s cubic-bezier(.25,.8,.35,1) forwards}
-.gift[data-state="open"] .box-body{animation:box-out .5s ease .25s forwards}
-.gift[data-state="open"] .piece{animation:confetti-burst var(--dur) cubic-bezier(.2,.6,.4,1) var(--delay) forwards}
-.gift[data-state="open"] .gift-message{visibility:visible}
-.gift[data-state="open"] .gift-msg{animation:gift-rise .6s ease .7s forwards}
-.gift[data-state="open"] .gift-cta{animation:gift-rise .45s ease 1.2s forwards}
-.gift[data-state="open"] .gift-replay{animation:gift-rise .45s ease 1.45s forwards}
-.gift[data-state="open"] .gift-open{opacity:0;pointer-events:none}
-
-@keyframes lid-fly{
-  0%{transform:translateY(0) rotate(0deg);opacity:1}
-  18%{transform:translateY(-9%) rotate(-4deg);opacity:1}
-  100%{transform:translateY(-320%) rotate(-25deg);opacity:0}
-}
-@keyframes box-out{to{transform:translateY(16px) scale(.95);opacity:0}}
-@keyframes gift-rise{to{opacity:1;transform:none}}
-@keyframes confetti-burst{
-  0%{transform:translate3d(0,0,0) rotate(0deg) scale(.5);opacity:0}
-  8%{opacity:1}
-  32%{transform:translate3d(calc(var(--dx) * .45), var(--rise), 0) rotate(calc(var(--rot) * .4)) scale(1);opacity:1}
-  100%{transform:translate3d(var(--dx), var(--fall), 0) rotate(var(--rot)) scale(.9);opacity:0}
-}
-
-/* ============================================================
    REDUCED MOTION
    ============================================================ */
 @media (prefers-reduced-motion:reduce){
@@ -781,17 +649,6 @@ body{
   [data-anim]{opacity:1 !important;transform:none !important}
   .hint svg{animation:none}
 
-  /* no lid flight, no confetti - the box just cross-fades to the message */
-  .giftbox,.glow,.gift-open,.gift-msg,.gift-cta,.gift-replay{
-    transition:opacity .25s linear !important;
-  }
-  .gift-msg,.gift-cta,.gift-replay{opacity:0 !important;transform:none !important}
-  .gift[data-state="open"] .giftbox,
-  .gift[data-state="open"] .glow,
-  .gift[data-state="open"] .gift-open{opacity:0 !important}
-  .gift[data-state="open"] .gift-msg,
-  .gift[data-state="open"] .gift-cta,
-  .gift[data-state="open"] .gift-replay{opacity:1 !important}
 }
 </style>
 </head>
@@ -840,20 +697,7 @@ const CONTENT = {
     ]
   },
 
-  gift: {
-    kicker:  "one last thing",
-    open:    "Open",
-    message: ["I know you keep sending us your lists.",
-              "So I made you somewhere to put them."],
-    cta:     "Open your gift →",
-    ctaHref: "/app/",
-    replay:  "replay"
-  },
-
-  hint: "Swipe up to explore",
-  more: "One more thing →",
-  /* "#gift" scrolls on to section 4. Set it to "/app/" to jump straight there. */
-  moreHref: "#gift"
+  hint: "Swipe up to explore"
 };
 
 /* ============================================================================
@@ -1020,29 +864,7 @@ const ACCENTS = {
   </svg>`
 };
 
-/* ---------- the gift box (inline SVG, two layers so the lid can fly) ---------- */
-const GOLD="#C9A227", GOLD_DK="#A8861D", GOLD_LT="#D9B443";
-
-/* both layers share one viewBox, so the lid always lands on the body */
-const BOX_BODY = `<svg class="box-body" viewBox="0 0 200 170" aria-hidden="true">
-  <rect x="20" y="56" width="160" height="104" rx="6" fill="#8A1414"/>
-  <rect x="86" y="56" width="28" height="104" fill="${GOLD}"/>
-  <rect x="20" y="96" width="160" height="24" fill="${GOLD}"/>
-  <rect x="20" y="56" width="160" height="104" rx="6" fill="none" stroke="#F2E8E4" stroke-width="3"/>
-  <path d="M20 120h160M20 96h160" stroke="${GOLD_DK}" stroke-width="1.2" opacity=".55"/>
-</svg>`;
-
-const BOX_LID = `<svg class="box-lid" viewBox="0 0 200 170" aria-hidden="true">
-  <path d="M97 34C74 44 46 36 48 21 50 8 80 16 97 32Z" fill="${GOLD}" stroke="${GOLD_DK}" stroke-width="2.4" stroke-linejoin="round"/>
-  <path d="M103 34c23 10 51 2 49-13-2-13-32-5-49 11Z" fill="${GOLD}" stroke="${GOLD_DK}" stroke-width="2.4" stroke-linejoin="round"/>
-  <rect x="10" y="36" width="180" height="28" rx="5" fill="#F2E8E4" stroke="#7A1010" stroke-width="2.5"/>
-  <rect x="86" y="36" width="28" height="28" fill="${GOLD}"/>
-  <circle cx="100" cy="36" r="8" fill="${GOLD_LT}" stroke="${GOLD_DK}" stroke-width="2.2"/>
-</svg>`;
-
-/* ---------- collage stack ----------
-   The small polaroids are sized off the collage HEIGHT (cqh), so however many
-   there are, the run fills the column and laps the one above it. */
+/* ---------- polaroid stack geometry ---------- */
 const SMALL_RATIO = 3/4;    // the photo inside each small frame
 const PAD_SIDE    = 0.055;  // white border, as a fraction of the frame's width
 const PAD_TOP     = 0.055;
@@ -1159,42 +981,7 @@ function sectionLetter(){
           <div class="letter">
             <h2 class="letter-title" data-anim>${l.title}</h2>
             <div class="letter-body" data-anim style="--d:160ms">${paras}${sign}</div>
-            <div class="more-wrap" data-anim style="--d:300ms">
-              <a class="more" href="${CONTENT.moreHref}">${CONTENT.more}</a>
-            </div>
           </div>
-
-        </div>
-      </div>
-    </div>
-  </section>`;
-}
-
-function sectionGift(){
-  const g = CONTENT.gift;
-  return `
-  <section class="panel" id="gift">
-    <div class="card">
-      <div class="paper maroon"></div><div class="grain"></div>
-      <div class="stage">
-        <div class="gift" data-state="closed">
-
-          <p class="gift-kicker" data-anim>${g.kicker}</p>
-
-          <div class="gift-stage">
-            <div class="glow" data-anim style="--d:120ms"></div>
-            <div class="giftbox" data-anim style="--d:120ms" data-open-trigger>
-              ${BOX_BODY}${BOX_LID}
-              <div class="confetti" data-confetti></div>
-            </div>
-            <div class="gift-message" aria-live="polite">
-              <p class="gift-msg">${g.message.join("<br>")}</p>
-              <a class="gift-cta" href="${g.ctaHref}">${g.cta}</a>
-              <button class="gift-replay" type="button" data-replay>${g.replay}</button>
-            </div>
-          </div>
-
-          <button class="gift-open" type="button" data-open-trigger data-anim style="--d:240ms">${g.open}</button>
 
         </div>
       </div>
@@ -1203,7 +990,7 @@ function sectionGift(){
 }
 
 const deck = document.getElementById("deck");
-deck.innerHTML = sectionHero() + sectionReasons() + sectionLetter() + sectionGift();
+deck.innerHTML = sectionHero() + sectionReasons() + sectionLetter();
 
 /* ============================================================================
    BEHAVIOUR
@@ -1227,7 +1014,7 @@ if (reduced){
       if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
     }
   }, { threshold:.2 });
-  document.querySelectorAll("#reasons [data-anim], #letter [data-anim], #gift [data-anim]")
+  document.querySelectorAll("#reasons [data-anim], #letter [data-anim]")
     .forEach(el => io.observe(el));
 
   /* Swipe hints fade once their section is scrolled past. */
@@ -1312,60 +1099,6 @@ if (!reduced){
   }
 }
 
-/* ---------- the gift ---------- */
-const gift      = document.querySelector(".gift");
-const confetti  = gift.querySelector("[data-confetti]");
-const openBtn   = gift.querySelector(".gift-open");
-
-/* 24 pieces max: squares, circles and thin rectangles in cream, gold, blush */
-function buildConfetti(){
-  const colors = ["#F2E8E4", "#C9A227", "#F7DDDD", "#D9B443", "#EBD9D4"];
-  let html = "";
-  for (let i = 0; i < 24; i++){
-    const shape = i % 3;                                  // 0 square, 1 circle, 2 strip
-    const size  = rand(5, 9);
-    const w = shape === 2 ? rand(2.5, 4)  : size;
-    const h = shape === 2 ? rand(10, 15)  : size;
-    const r = shape === 1 ? "50%" : "1px";
-    html += `<i class="piece" style="
-      --w:${w.toFixed(1)}px; --h:${h.toFixed(1)}px; --r:${r};
-      --c:${colors[i % colors.length]};
-      --dx:${rand(-150,150).toFixed(0)}px;
-      --rise:${rand(-160,-80).toFixed(0)}px;
-      --fall:${rand(170,270).toFixed(0)}px;
-      --rot:${rand(-320,320).toFixed(0)}deg;
-      --dur:${rand(.9,1.5).toFixed(2)}s;
-      --delay:${rand(0,.18).toFixed(2)}s;"></i>`;
-  }
-  confetti.innerHTML = html;
-}
-
-function openGift(){
-  if (gift.dataset.state === "open") return;
-  if (!reduced) buildConfetti();                 // no confetti under reduced motion
-  gift.dataset.state = "open";
-  openBtn.disabled = true;
-}
-
-function resetGift(){
-  gift.dataset.state = "closed";
-  confetti.innerHTML = "";
-  openBtn.disabled = false;
-  void gift.offsetWidth;                         // reflow, so the animations re-run
-}
-
-gift.querySelectorAll("[data-open-trigger]").forEach(el => el.addEventListener("click", openGift));
-gift.querySelector("[data-replay]").addEventListener("click", resetGift);
-
-/* in-page targets (the letter's "One more thing") scroll the deck instead of navigating */
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener("click", e => {
-    const target = document.querySelector(a.getAttribute("href"));
-    if (!target) return;
-    e.preventDefault();
-    deck.scrollTo({ top: target.offsetTop, behavior: reduced ? "auto" : "smooth" });
-  });
-});
 </script>
 </body>
 </html>

@@ -34,8 +34,6 @@ export type Content = {
   letter: {
     label: string;
     paragraphs: readonly string[];
-    moreLabel: string;
-    moreHref: string;
     photos: readonly PhotoRef[];
   };
 };
@@ -58,12 +56,12 @@ export const content: Content = {
     headlineAccent: 'You',
     dragCue: 'DRAG →',
     items: [
-      { caption: 'Your smile', alt: 'Marion smiling' },
-      { caption: 'Your hugs', alt: 'A hug' },
-      { caption: 'Your patience', alt: 'Marion, patient as ever' },
-      { caption: 'Your kindness', alt: 'A moment of kindness' },
-      { caption: 'The way you make me laugh', alt: 'Laughing together' },
-      { caption: 'Everything about you', alt: 'Marion' },
+      { caption: 'Your smile', alt: 'Marion smiling', src: '/images/Reason1.jpeg' },
+      { caption: 'Your hugs', alt: 'A hug', src: '/images/Reason2.jpeg' },
+      { caption: 'Your patience', alt: 'Marion, patient as ever', src: '/images/Reason3.jpeg' },
+      { caption: 'Your kindness', alt: 'A moment of kindness', src: '/images/Reason4.jpeg' },
+      { caption: 'The way you make me laugh', alt: 'Laughing together', src: '/images/Reason5.jpeg' },
+      { caption: 'Everything about you', alt: 'Marion', src: '/images/Reason6.jpeg' },
     ],
   },
 
@@ -75,13 +73,11 @@ export const content: Content = {
       "As long as I have you, I know I'll always have somewhere to come home to. I love your kindness, your patience, your stubborn hope, and the way you care for the people around you — even on the days it costs you something.",
       'I am so grateful to know you, and to be loved by you.',
     ],
-    moreLabel: 'ONE MORE THING →',
-    moreHref: '/app',
     photos: [
-      { alt: 'Marion, one' },
-      { alt: 'Marion, two' },
-      { alt: 'Marion, three' },
-      { alt: 'Marion, four' },
+      { alt: 'Marion', src: '/images/LetterHeroPotrait.jpeg' },
+      { alt: 'Marion, two', src: '/images/Letter1.jpeg' },
+      { alt: 'Marion, three', src: '/images/Letter2.jpeg' },
+      { alt: 'Marion, four', src: '/images/Letter3.jpeg' },
     ],
   },
 };

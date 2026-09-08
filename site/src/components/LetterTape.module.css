@@ -3,6 +3,13 @@
   grid-template-columns: 1fr 520px;
 }
 
+/* A definite height, not just min-height: without one the photo wall's `1fr`
+   rows fall back to the images' intrinsic size and the bottom row overflows.
+   Placeholders hid this because they have no natural height. */
+@media (min-width: 901px) {
+  .letter { height: 100dvh; overflow: hidden; }
+}
+
 /* ---- left: the photo wall ---- */
 .wall {
   background: #1A1512;
@@ -15,7 +22,9 @@
   min-height: 0;
 }
 
-.tile { height: 100%; }
+/* no height here: the grid stretches each tile, so the offset margins below
+   shorten the tile instead of pushing it past the row */
+.tile { min-height: 0; }
 .tile .tileFrame { height: 100%; }
 
 /* off-grid rhythm: second tile drops, third lifts */

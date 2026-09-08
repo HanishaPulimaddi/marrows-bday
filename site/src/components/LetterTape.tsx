@@ -80,9 +80,6 @@ export function LetterTape() {
 
         <div className={styles.footer} data-reveal style={stagger(3)}>
           <span className={styles.footerRule} aria-hidden="true" />
-          <a className={styles.more} href={letter.moreHref}>
-            {letter.moreLabel}
-          </a>
         </div>
       </div>
     </section>

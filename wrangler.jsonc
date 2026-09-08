@@ -1,26 +1,10 @@
 {
   "name": "marrow-bday",
   "compatibility_date": "2026-09-07",
-  "main": "./worker/index.js",
 
-  // The Worker only runs for requests that don't match a file in ./public.
-  // The binding lets it hand anything else back to the asset server explicitly.
+  // Static only. There is no Worker script, no D1 and no cron any more - the
+  // reminder app and its push delivery were removed.
   "assets": {
-    "directory": "./public",
-    "binding": "ASSETS"
-  },
-
-  // the overdue sweep
-  "triggers": {
-    "crons": ["* * * * *"]
-  },
-
-  // One binding, named DB, because that is what worker/index.js reads (env.DB).
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "marrow-bday-db",
-      "database_id": "afcd6845-5bc7-4f7b-a506-26dab7b36991"
-    }
-  ]
+    "directory": "./public"
+  }
 }
