@@ -1,12 +1,31 @@
 .hero {
+  --glow-x: 50%;
+  --glow-strength: 1;
+
   display: grid;
   grid-template-rows: auto 1fr auto;
   padding: 40px 48px 34px;
-  background:
-    radial-gradient(70% 60% at 50% 110%, var(--wine-500) 0%, rgba(139, 17, 22, 0) 70%),
-    var(--wine-900);
+  background: var(--wine-900);
   overflow: hidden;
 }
+
+/* the light in the room: its own layer so it can dim, and so it can follow
+   the pointer without repainting the whole section background */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(70% 60% at var(--glow-x) 110%, var(--wine-500) 0%, rgba(139, 17, 22, 0) 70%);
+  opacity: var(--glow-strength);
+  transition: opacity 550ms ease;
+}
+
+.hero > * { position: relative; z-index: 1; }
+
+/* lights off */
+.hero[data-lit='false'] { --glow-strength: .1; }
 
 /* ---- corner labels ---- */
 .corners {
@@ -52,14 +71,19 @@
 
 .headline span { display: block; }
 
-/* ---- the floating lamp ---- */
+/* ---- the floating lamp: the one thing on this page you can touch ---- */
 .lamp {
   position: relative;
   margin-top: clamp(18px, 4vh, 44px);
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
   animation: float 7s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .lampRule {
@@ -83,7 +107,21 @@
   border-radius: 50%;
   background: var(--ember);
   box-shadow: 0 0 44px 10px rgba(194, 21, 28, .6);
+  transition: background 550ms ease, box-shadow 550ms ease;
 }
+
+.lamp:hover .bulb,
+.lamp:focus-visible .bulb { box-shadow: 0 0 56px 14px rgba(194, 21, 28, .78); }
+
+.hero[data-lit='false'] .bulb {
+  background: #4A0A0D;
+  box-shadow: 0 0 12px 2px rgba(194, 21, 28, .16);
+}
+
+.hero[data-lit='false'] .lampRule,
+.hero[data-lit='false'] .lampBox { border-color: rgba(244, 231, 228, .18); }
+
+.lampRule, .lampBox { transition: border-color 550ms ease, background-color 550ms ease; }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }

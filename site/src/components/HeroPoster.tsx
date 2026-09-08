@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { content } from '../content';
 import { Label } from './Label';
 import { useReveal, stagger } from '../hooks/useReveal';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import styles from './HeroPoster.module.css';
 
 type HeroPosterProps = {
@@ -10,11 +12,26 @@ type HeroPosterProps = {
 
 export function HeroPoster({ nextId }: HeroPosterProps) {
   const ref = useReveal<HTMLElement>();
+  const reduced = usePrefersReducedMotion();
+  const [lit, setLit] = useState(true);
   const { hero, date } = content;
 
   const goNext = () => {
     document.getElementById(nextId)?.scrollIntoView({ block: 'start' });
   };
+
+  /* The glow leans towards the pointer. Written straight to the custom property
+     rather than through state, so moving the mouse doesn't re-render the tree. */
+  const trackGlow = (e: React.PointerEvent<HTMLElement>) => {
+    const el = ref.current;
+    if (!el || reduced) return;
+    const box = el.getBoundingClientRect();
+    const x = ((e.clientX - box.left) / box.width) * 100;
+    /* keep it near the middle - this is a lean, not a spotlight */
+    el.style.setProperty('--glow-x', `${(50 + (x - 50) * 0.35).toFixed(1)}%`);
+  };
+
+  const resetGlow = () => ref.current?.style.setProperty('--glow-x', '50%');
 
   return (
     <section
@@ -22,6 +39,9 @@ export function HeroPoster({ nextId }: HeroPosterProps) {
       ref={ref}
       className={`page ${styles.hero}`}
       aria-label="Happy birthday"
+      data-lit={lit}
+      onPointerMove={trackGlow}
+      onPointerLeave={resetGlow}
     >
       <div className={styles.corners}>
         <Label className={styles.corner} data-reveal style={stagger(0)}>
@@ -43,12 +63,20 @@ export function HeroPoster({ nextId }: HeroPosterProps) {
           ))}
         </h1>
 
-        <div className={styles.lamp} data-reveal style={stagger(4)} aria-hidden="true">
-          <div className={styles.lampRule} />
-          <div className={styles.lampBox}>
-            <div className={styles.bulb} />
-          </div>
-        </div>
+        <button
+          type="button"
+          className={styles.lamp}
+          onClick={() => setLit(on => !on)}
+          aria-pressed={lit}
+          aria-label={lit ? 'Turn the light off' : 'Turn the light on'}
+          data-reveal
+          style={stagger(4)}
+        >
+          <span className={styles.lampRule} />
+          <span className={styles.lampBox}>
+            <span className={styles.bulb} />
+          </span>
+        </button>
       </div>
 
       <div className={styles.foot}>
