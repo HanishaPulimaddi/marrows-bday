@@ -2,9 +2,10 @@
   "name": "marrow-bday",
   "compatibility_date": "2026-09-07",
 
-  // Static only. There is no Worker script, no D1 and no cron any more - the
-  // reminder app and its push delivery were removed.
+  // Static only - no Worker script, no D1, no cron.
+  // Serves the built Vite microsite. `npm run deploy` builds it first; running
+  // `wrangler deploy` on its own would ship whatever is in site/dist already.
   "assets": {
-    "directory": "./public"
+    "directory": "./site/dist"
   }
 }

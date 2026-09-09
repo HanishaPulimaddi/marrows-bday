@@ -1,10 +1,12 @@
 {
   "name": "marrow's-bday",
   "version": "1.0.0",
-  "description": "A four-section, full-screen vertical scroll experience — hero, reasons, letter,\r and a gift box that opens. Static, no build step, no dependencies. Deploys to\r Cloudflare Pages as-is.",
+  "description": "A four-section, full-screen vertical scroll experience \u2014 hero, reasons, letter,\r and a gift box that opens. Static, no build step, no dependencies. Deploys to\r Cloudflare Pages as-is.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm --prefix site run build",
+    "deploy": "npm run build && wrangler deploy"
   },
   "repository": {
     "type": "git",
