@@ -34,6 +34,9 @@ export type Content = {
   letter: {
     label: string;
     paragraphs: readonly string[];
+    /** the link out to the playlist page */
+    moreLabel: string;
+    moreHref: string;
     photos: readonly PhotoRef[];
   };
 };
@@ -67,6 +70,9 @@ export const content: Content = {
 
   letter: {
     label: 'A LETTER FOR YOU',
+    /* '#/vinyl' is the hash route the app router matches - see useHashRoute */
+    moreLabel: 'VIEW PLAYLIST →',
+    moreHref: '#/vinyl',
     paragraphs: [
       'Happy birthday, Marrow.',
       "I know I might not write as poetically as Manu, but my writing ain't bad. So here are some words I'd like to express to you on this beautiful occasion of your birthday.",
