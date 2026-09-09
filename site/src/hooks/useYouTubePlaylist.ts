@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Song } from '../songs';
 
 /* ============================================================================
    YouTube IFrame Player API
@@ -9,15 +8,20 @@ import type { Song } from '../songs';
    quite separate from the YouTube *Data* API, which is the one that needs a key.
 
    How it hangs together:
-     1. The script is injected once and calls a global `onYouTubeIframeAPIReady`.
-     2. We build a YT.Player over a mount div, giving it the first video id.
-     3. `onStateChange` tells us when a song ENDED, so we load the next id into
-        the same player rather than creating a new one per song.
-     4. `onError` fires for videos that are private, removed, or that the owner
-        has blocked from embedding - we skip past those instead of stalling.
+     1. The script is injected once, on the first press, and calls a global
+        `onYouTubeIframeAPIReady`.
+     2. We build a YT.Player over a mount div with `listType: 'playlist'` and
+        the playlist id, so YouTube owns the queue and advances between tracks
+        by itself - nobody has to click each song.
+     3. `onStateChange` is the source of truth for the button and the record:
+        PLAYING / PAUSED / ENDED come from the player, not from the click.
+     4. `getVideoData()` gives us the current track's title and author, so the
+        "NOW PLAYING" line shows the real song without the Data API.
+     5. `onError` fires for tracks that are private, removed, or blocked from
+        embedding - we skip past those rather than stalling on them.
 
-   The iframe still has to exist and be laid out for playback to work, so the
-   page keeps it in the DOM, sized small and fully transparent.
+   The iframe has to exist and be laid out for playback to work, so the page
+   keeps it in the DOM, sized small and fully transparent.
    ============================================================================ */
 
 const SCRIPT_SRC = 'https://www.youtube.com/iframe_api';
@@ -27,13 +31,21 @@ const ENDED = 0;
 const PLAYING = 1;
 const PAUSED = 2;
 
+/** how many unplayable tracks we skip past before giving up on the playlist */
+const MAX_SKIPS = 10;
+
+type VideoData = { title?: string; author?: string; video_id?: string };
+
 type YTPlayer = {
   playVideo(): void;
   pauseVideo(): void;
   stopVideo(): void;
   destroy(): void;
-  loadVideoById(id: string): void;
+  nextVideo(): void;
   getPlayerState(): number;
+  getVideoData?(): VideoData;
+  getPlaylist?(): string[] | null;
+  getPlaylistIndex?(): number;
 };
 
 declare global {
@@ -79,57 +91,96 @@ function loadYouTubeAPI(): Promise<NonNullable<Window['YT']>> {
   return apiPromise;
 }
 
-export type PlaybackStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
+/** the handful of onError codes worth telling someone about */
+function describeError(code: number): string {
+  switch (code) {
+    case 2:   return 'that playlist id looks wrong';
+    case 5:   return 'this browser could not play the track';
+    case 100: return 'the playlist or track is private or no longer exists';
+    case 101:
+    case 150: return 'the owner does not allow this to be played outside YouTube';
+    default:  return `the player reported error ${code}`;
+  }
+}
 
-export function useYouTubePlaylist(songs: Song[]) {
+export type PlaybackStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
+export type Track = { title: string; artist: string; id: string };
+
+export function useYouTubePlaylist(playlistId: string) {
   const [status, setStatus] = useState<PlaybackStatus>('idle');
-  const [index, setIndex] = useState(0);
+  const [track, setTrack] = useState<Track | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const mountRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
-  /* player callbacks fire outside React's render, so they read refs not state */
-  const indexRef = useRef(0);
-  const failuresRef = useRef(0);
+  /* player callbacks fire outside React's render, so they read a ref */
+  const skipsRef = useRef(0);
 
-  const stop = useCallback(() => {
-    indexRef.current = 0;
-    failuresRef.current = 0;
-    setIndex(0);
-    setStatus('idle');
-    playerRef.current?.stopVideo();
+  /** pull the current track's title and artist straight off the player */
+  const readTrack = useCallback(() => {
+    const data = playerRef.current?.getVideoData?.();
+    if (!data?.title) return;
+    setTrack({
+      title: data.title,
+      artist: data.author ?? '',
+      id: data.video_id ?? data.title,
+    });
   }, []);
 
-  const advance = useCallback(() => {
-    const next = indexRef.current + 1;
-    if (next >= songs.length) { stop(); return; }
-    indexRef.current = next;
-    setIndex(next);
-    playerRef.current?.loadVideoById(songs[next].youtubeId);
-  }, [songs, stop]);
-
   const onStateChange = useCallback((event: { data: number }) => {
-    if (event.data === PLAYING) { failuresRef.current = 0; setStatus('playing'); }
-    else if (event.data === PAUSED) setStatus('paused');
-    else if (event.data === ENDED) advance();
-  }, [advance]);
+    const player = playerRef.current;
 
-  const onError = useCallback(() => {
-    /* private, removed, or embedding disabled - don't let one bad id stall it */
-    failuresRef.current += 1;
-    console.warn('[vinyl] song could not be played:', songs[indexRef.current]?.youtubeId);
-    if (failuresRef.current >= songs.length) {
-      setStatus('error');
-      setError('none of these songs could be played');
+    if (event.data === PLAYING) {
+      skipsRef.current = 0;
+      setStatus('playing');
+      readTrack();
       return;
     }
-    advance();
-  }, [advance, songs]);
+
+    if (event.data === PAUSED) {
+      setStatus('paused');
+      return;
+    }
+
+    if (event.data === ENDED) {
+      /* ENDED fires between tracks as well as at the very end, so only treat it
+         as "finished" when there is nothing after the current item */
+      const list = player?.getPlaylist?.() ?? null;
+      const index = player?.getPlaylistIndex?.() ?? 0;
+      const isLast = !list || list.length === 0 || index >= list.length - 1;
+      if (isLast) {
+        setStatus('idle');
+        setTrack(null);
+      }
+      /* otherwise YouTube advances to the next track on its own */
+    }
+  }, [readTrack]);
+
+  const onError = useCallback((event: { data: number }) => {
+    const reason = describeError(event.data);
+    console.warn(`[vinyl] YouTube player error ${event.data}: ${reason}`);
+
+    skipsRef.current += 1;
+    if (skipsRef.current > MAX_SKIPS) {
+      setStatus('error');
+      setError(reason);
+      return;
+    }
+
+    /* a single unplayable track must not stall the whole playlist */
+    try {
+      playerRef.current?.nextVideo();
+    } catch {
+      setStatus('error');
+      setError(reason);
+    }
+  }, []);
 
   const toggle = useCallback(async () => {
-    if (!songs.length) return;
-
     const player = playerRef.current;
+
+    /* once the player exists, the button just flips it - the resulting state
+       comes back through onStateChange rather than being assumed here */
     if (player) {
       if (player.getPlayerState() === PLAYING) player.pauseVideo();
       else player.playVideo();
@@ -143,8 +194,10 @@ export function useYouTubePlaylist(songs: Song[]) {
       if (!mountRef.current) return;
 
       playerRef.current = new YT.Player(mountRef.current, {
-        videoId: songs[indexRef.current].youtubeId,
+        /* no videoId: `list` is what queues the whole playlist */
         playerVars: {
+          listType: 'playlist',
+          list: playlistId,
           autoplay: 1,        // allowed: this runs inside the click handler
           controls: 0,
           disablekb: 1,
@@ -160,10 +213,12 @@ export function useYouTubePlaylist(songs: Song[]) {
         },
       });
     } catch (err) {
+      /* the page keeps working; only the music is unavailable */
+      console.error('[vinyl] could not start the YouTube player:', err);
       setStatus('error');
       setError(err instanceof Error ? err.message : 'the player could not start');
     }
-  }, [songs, onStateChange, onError]);
+  }, [playlistId, onStateChange, onError]);
 
   useEffect(() => () => { playerRef.current?.destroy(); playerRef.current = null; }, []);
 
@@ -172,8 +227,8 @@ export function useYouTubePlaylist(songs: Song[]) {
     mountRef,
     status,
     error,
-    current: songs[index] ?? null,
-    index,
+    /** the track YouTube is actually on, read from the player */
+    track,
     toggle,
     isPlaying: status === 'playing',
   };

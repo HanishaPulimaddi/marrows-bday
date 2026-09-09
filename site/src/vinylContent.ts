@@ -55,7 +55,7 @@ export const vinylContent = {
   ] as VinylMedia[],
 
   /* ---- shown if every song fails to load ---- */
-  errorNote: 'The songs would not load. Check the video ids in src/songs.ts,\nand that each video allows embedding.',
+  errorNote: 'The playlist would not load. Check PLAYLIST_ID in src/songs.ts,\nand that the playlist is public or unlisted.',
 };
 
 /** a path ending .mp4 / .webm / .mov is treated as video, anything else image */

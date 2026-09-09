@@ -1,40 +1,19 @@
 /* ============================================================================
    THE PLAYLIST  —  this is the file to edit.
 
-   Paste your YouTube video IDs below. The id is the part after `v=` in a normal
-   YouTube URL, or the last part of a youtu.be link:
+   The page plays a whole YouTube playlist, so there is one id to keep here
+   rather than a list of individual songs. It is the `list=` part of the URL:
 
-     https://www.youtube.com/watch?v=dQw4w9WgXcQ   ->  dQw4w9WgXcQ
-     https://youtu.be/dQw4w9WgXcQ                  ->  dQw4w9WgXcQ
+     https://music.youtube.com/playlist?list=PLXOsRpt93s7U&si=...
+                                             ^^^^^^^^^^^^^
 
-   No API key is needed. The page uses the free YouTube IFrame Player API, which
-   only needs the video id. Songs play in the order listed here.
+   No API key and no Google Cloud project. This is the free IFrame Player API,
+   which only needs the id - quite separate from the YouTube *Data* API.
 
-   A video will silently fail if its owner has disabled embedding - the player
-   skips to the next song when that happens, so prefer official uploads or
-   videos you have checked play in an embed.
+   Two things the playlist itself has to satisfy, or nothing will play:
+     - it must be Public or Unlisted. A Private playlist cannot be embedded.
+     - it must be a real playlist you made, not one of YouTube Music's
+       generated radio mixes (those have ids beginning RDCLAK / RDAMVM).
    ============================================================================ */
 
-export type Song = {
-  title: string;
-  artist: string;
-  youtubeId: string;
-};
-
-export const songs: Song[] = [
-  {
-    title: 'Song Name 1',
-    artist: 'Artist Name',
-    youtubeId: 'VIDEO_ID_1',
-  },
-  {
-    title: 'Song Name 2',
-    artist: 'Artist Name',
-    youtubeId: 'VIDEO_ID_2',
-  },
-  {
-    title: 'Song Name 3',
-    artist: 'Artist Name',
-    youtubeId: 'VIDEO_ID_3',
-  },
-];
+export const PLAYLIST_ID = 'PLXOsRpt93s7U';

@@ -5,7 +5,7 @@ import { FilmStrip } from '../components/FilmStrip';
 import { useYouTubePlaylist } from '../hooks/useYouTubePlaylist';
 import { useReveal, stagger } from '../hooks/useReveal';
 import { vinylContent } from '../vinylContent';
-import { songs } from '../songs';
+import { PLAYLIST_ID } from '../songs';
 import styles from './VinylPage.module.css';
 
 /** a few dried stems for the left margin - drawn, so there is no asset to find */
@@ -35,8 +35,8 @@ const DriedStems = () => (
 
 export function VinylPage() {
   const ref = useReveal<HTMLElement>();
-  const { mountRef, status, error, current, index, toggle, isPlaying } =
-    useYouTubePlaylist(songs);
+  const { mountRef, status, error, track, toggle, isPlaying } =
+    useYouTubePlaylist(PLAYLIST_ID);
 
   const c = vinylContent;
   const loading = status === 'loading';
@@ -49,15 +49,26 @@ export function VinylPage() {
     if (loading) {
       return <Label small className={styles.statusLabel}>{c.status.loading}</Label>;
     }
-    if ((status === 'playing' || status === 'paused') && current) {
+    if (status === 'playing' || status === 'paused') {
       return (
         <>
           <Label small className={styles.statusLabel}>
             {status === 'playing' ? c.status.nowPlaying : c.status.paused}
           </Label>
-          {/* keyed on the index so each song fades in */}
-          <p key={`t-${index}`} className={`${styles.songTitle} ${styles.fade}`}>{current.title}</p>
-          <p key={`a-${index}`} className={`${styles.songArtist} ${styles.fade}`}>{current.artist}</p>
+          {/* title and artist come from the player, so they follow the playlist.
+              Keyed on the track id so each change fades in. */}
+          {track ? (
+            <>
+              <p key={`t-${track.id}`} className={`${styles.songTitle} ${styles.fade}`}>
+                {track.title}
+              </p>
+              {track.artist ? (
+                <p key={`a-${track.id}`} className={`${styles.songArtist} ${styles.fade}`}>
+                  {track.artist}
+                </p>
+              ) : null}
+            </>
+          ) : null}
         </>
       );
     }
