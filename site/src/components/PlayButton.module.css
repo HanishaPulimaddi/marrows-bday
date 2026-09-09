@@ -1,0 +1,62 @@
+.button {
+  position: relative;
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  color: var(--cream);
+  background: radial-gradient(circle at 36% 28%, #a8161d 0%, var(--wine-500) 46%, var(--wine-700) 100%);
+  border: 1px solid rgba(246, 241, 230, .75);
+  box-shadow:
+    0 10px 26px rgba(67, 6, 9, .34),
+    0 0 30px 4px rgba(139, 17, 22, .22);
+  transition: transform 220ms var(--ease-reveal), box-shadow 220ms var(--ease-reveal);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.button:hover,
+.button:focus-visible {
+  transform: translateY(-3px);
+  box-shadow:
+    0 16px 32px rgba(67, 6, 9, .38),
+    0 0 44px 8px rgba(194, 21, 28, .34);
+}
+
+.button:active { transform: translateY(0) scale(.96); }
+
+.button:disabled { opacity: .55; cursor: progress; }
+
+.icon { width: 26px; height: 26px; display: block; }
+/* nudge the triangle so it looks optically centred */
+.play { margin-left: 4px; }
+
+/* a slow ring, only while something is playing */
+.button[data-playing='true']::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px solid rgba(139, 17, 22, .45);
+  animation: pulse 2.8s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0%   { transform: scale(.96); opacity: .7; }
+  70%  { transform: scale(1.14); opacity: 0; }
+  100% { transform: scale(1.14); opacity: 0; }
+}
+
+@media (max-width: 768px) {
+  /* comfortably tappable */
+  .button { width: 84px; height: 84px; }
+  .icon { width: 28px; height: 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button[data-playing='true']::after { animation: none; opacity: .5; transform: none; }
+  .button:hover, .button:focus-visible { transform: none; }
+}

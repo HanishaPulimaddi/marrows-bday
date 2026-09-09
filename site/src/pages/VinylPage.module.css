@@ -1,0 +1,225 @@
+.page {
+  position: relative;
+  min-height: 100dvh;
+  padding: 32px 48px 40px;
+  background: var(--paper);
+  color: var(--wine-700);
+  /* clip sideways only - the rotated film strip would otherwise widen the page,
+     but the foot note must never be cut off */
+  overflow-x: clip;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+/* paper grain, generated rather than an image */
+.page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 170px 170px;
+}
+
+/* a warm bloom behind the record */
+.page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(58% 46% at 50% 52%, rgba(194, 21, 28, .10), transparent 70%);
+}
+
+.page > * { position: relative; z-index: 1; }
+
+/* ---- top corners ---- */
+.corners {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.corner { color: var(--wine-500); opacity: .8; }
+
+/* ---- the three-column body ---- */
+.body {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, auto) 1fr;
+  align-items: center;
+  gap: 28px;
+  min-height: 0;
+}
+
+.aside {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  min-width: 0;
+}
+
+.left { align-items: flex-start; }
+.right { align-items: flex-end; }
+
+/* ---- centre stack ---- */
+.centre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(14px, 2.2vh, 24px);
+  padding: 10px 0 0;
+}
+
+.headline {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(42px, 7vw, 92px);
+  line-height: .86;
+  text-align: center;
+  color: var(--wine-700);
+}
+
+.headline span { display: block; }
+
+/* sized against height too, so it still fits a 900px-tall screen */
+.recordSize { width: clamp(220px, min(36vmin, 33vh), 400px); }
+
+/* ---- the words under the record ---- */
+.status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 78px;
+  text-align: center;
+}
+
+.statusLabel { color: var(--wine-500); opacity: .75; }
+
+.invitation {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: .3em;
+  line-height: 2;
+  text-transform: uppercase;
+  color: var(--wine-500);
+  opacity: .8;
+}
+
+.songTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(20px, 2.6vw, 28px);
+  line-height: 1.2;
+  color: var(--wine-700);
+}
+
+.songArtist {
+  margin: 0;
+  font-family: var(--font-romance);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--wine-500);
+  opacity: .85;
+}
+
+/* each change of song fades in rather than snapping */
+.fade { animation: fade-up 520ms var(--ease-reveal) both; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.error {
+  margin: 0;
+  max-width: 34ch;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.8;
+  letter-spacing: .04em;
+  color: var(--wine-500);
+  white-space: pre-line;
+}
+
+/* ---- handwritten notes ---- */
+.note {
+  margin: 0;
+  font-family: var(--font-script);
+  font-size: clamp(21px, 2.4vw, 30px);
+  line-height: 1.35;
+  color: var(--wine-500);
+  white-space: pre-line;
+}
+
+.noteLeft { rotate: -4deg; }
+.noteRight { rotate: 3deg; text-align: right; }
+.noteFoot { rotate: -2deg; text-align: center; }
+
+.foot {
+  display: flex;
+  justify-content: center;
+  padding-top: 6px;
+}
+
+/* ---- dried stems, drawn rather than photographed ---- */
+.stems { width: clamp(120px, 13vw, 190px); height: auto; opacity: .9; }
+
+/* ---- the player iframe: present and laid out, but invisible ---- */
+.player {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 0;
+  width: 160px;
+  height: 90px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- tablet -- */
+@media (max-width: 1024px) {
+  .page { padding: 32px 30px 44px; }
+  .body { gap: 18px; }
+  .recordSize { width: clamp(220px, min(42vmin, 34vh), 340px); }
+  .note { font-size: clamp(19px, 2.8vw, 25px); }
+}
+
+/* ---------------------------------------------------------------- mobile -- */
+@media (max-width: 768px) {
+  .page {
+    padding: 26px 20px 40px;
+    grid-template-rows: auto auto;
+    /* keep the headline clear of the corner labels */
+    row-gap: 20px;
+  }
+
+  /* the record leads; everything else falls in beneath it */
+  .body {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .centre { order: 1; }
+  .right  { order: 2; align-items: center; }
+  .left   { order: 3; align-items: center; }
+
+  .aside {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    flex-wrap: wrap;
+  }
+
+  .recordSize { width: min(78vw, 340px); }
+  .noteRight, .noteLeft { text-align: center; rotate: -2deg; }
+  .stems { width: 96px; }
+}

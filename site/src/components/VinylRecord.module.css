@@ -1,0 +1,163 @@
+.record {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  /* the burgundy halo the record sits in */
+  box-shadow:
+    0 0 0 1px rgba(67, 6, 9, .22),
+    0 26px 60px rgba(67, 6, 9, .30),
+    0 0 90px 10px rgba(139, 17, 22, .16);
+}
+
+/* ---- the disc: this is the layer that spins ---- */
+.disc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    /* the fine groove lines */
+    repeating-radial-gradient(circle at 50% 50%,
+      rgba(255, 255, 255, .055) 0 1px,
+      rgba(255, 255, 255, 0) 1px 3px),
+    /* wider bands, so the grooves read in groups like a real pressing */
+    repeating-radial-gradient(circle at 50% 50%,
+      rgba(0, 0, 0, .5) 0 8px,
+      rgba(255, 255, 255, .028) 8px 9px,
+      rgba(0, 0, 0, .5) 9px 17px),
+    /* the vinyl itself, lifting slightly towards the rim */
+    radial-gradient(circle at 50% 50%,
+      #1a1614 0 30%,
+      #121010 30% 62%,
+      #0d0b0b 62% 88%,
+      #171413 88% 97%,
+      #0a0909 97% 100%);
+}
+
+/* the lead-out groove near the label, and the rim edge */
+.disc::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%,
+      transparent 0 33.5%,
+      rgba(255, 255, 255, .10) 33.5% 34%,
+      transparent 34% 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07);
+}
+
+.spinning { animation: revolve 6.5s linear infinite; }
+
+@keyframes revolve {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ---- the sheen stays put while the disc turns underneath it ---- */
+.sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    conic-gradient(from 200deg at 50% 50%,
+      rgba(255, 255, 255, 0) 0deg,
+      rgba(255, 255, 255, .085) 32deg,
+      rgba(255, 255, 255, 0) 74deg,
+      rgba(255, 255, 255, 0) 190deg,
+      rgba(255, 255, 255, .05) 218deg,
+      rgba(255, 255, 255, 0) 256deg),
+    radial-gradient(120% 90% at 28% 14%, rgba(255, 255, 255, .07), transparent 55%);
+  mix-blend-mode: screen;
+}
+
+/* ---- the paper label in the middle ---- */
+.label {
+  position: relative;
+  z-index: 2;
+  width: 42%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 34% 26%, #a8161d 0%, var(--wine-500) 42%, var(--wine-700) 100%);
+  box-shadow:
+    0 0 0 1px rgba(20, 4, 5, .5),
+    inset 0 0 22px rgba(20, 4, 5, .45);
+}
+
+/* ---- the circular photo or video ---- */
+.media {
+  position: relative;
+  width: 74%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #2a2422;
+  box-shadow:
+    0 0 0 2px rgba(246, 241, 230, .8),
+    0 0 0 3px rgba(67, 6, 9, .5),
+    0 6px 18px rgba(20, 4, 5, .45);
+  transition: transform 700ms var(--ease-reveal), box-shadow 700ms var(--ease-reveal);
+}
+
+.media img,
+.media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* the same striped placeholder the rest of the site uses */
+.placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, .08) 0 8px,
+    rgba(255, 255, 255, .16) 8px 16px
+  );
+}
+
+.placeholderTag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: rgba(246, 241, 230, .7);
+  text-align: center;
+  padding: 0 .5em;
+}
+
+/* while a song plays the centre breathes, very slightly */
+.record[data-playing='true'] .media {
+  transform: scale(1.035);
+  box-shadow:
+    0 0 0 2px rgba(246, 241, 230, .9),
+    0 0 0 3px rgba(67, 6, 9, .5),
+    0 0 34px 6px rgba(194, 21, 28, .35);
+}
+
+/* ---- spindle hole ---- */
+.spindle {
+  position: absolute;
+  z-index: 3;
+  width: 3.2%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #0b0a09;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinning { animation: none; }
+  .record[data-playing='true'] .media { transform: none; }
+}

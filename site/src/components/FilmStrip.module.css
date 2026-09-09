@@ -1,0 +1,70 @@
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 10px;
+  background: #14100f;
+  border-radius: 2px;
+  rotate: 2.5deg;
+  box-shadow: 0 16px 34px rgba(67, 6, 9, .26);
+  /* the sprocket holes down both edges */
+  background-image:
+    repeating-linear-gradient(180deg,
+      transparent 0 9px,
+      rgba(246, 241, 230, .72) 9px 15px,
+      transparent 15px 24px),
+    repeating-linear-gradient(180deg,
+      transparent 0 9px,
+      rgba(246, 241, 230, .72) 9px 15px,
+      transparent 15px 24px);
+  background-size: 5px 24px, 5px 24px;
+  background-position: 3px 0, calc(100% - 3px) 0;
+  background-repeat: repeat-y, repeat-y;
+}
+
+.cell {
+  width: 128px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #241d1b;
+  border: 1px solid rgba(246, 241, 230, .1);
+}
+
+.cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, .07) 0 8px,
+    rgba(255, 255, 255, .14) 8px 16px
+  );
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .26em;
+  color: rgba(246, 241, 230, .5);
+}
+
+/* a strip of tape holding it to the page */
+.tape {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  translate: -50% 0;
+  width: 74px;
+  height: 26px;
+  rotate: -6deg;
+  background: rgba(246, 241, 230, .5);
+  border-left: 1px solid rgba(246, 241, 230, .25);
+  border-right: 1px solid rgba(246, 241, 230, .25);
+  box-shadow: 0 2px 6px rgba(67, 6, 9, .14);
+}
+
+.wrap { position: relative; }
+
+@media (max-width: 1024px) {
+  .cell { width: 104px; }
+}

@@ -23,6 +23,7 @@
   --font-romance: 'Cormorant Garamond', Georgia, serif;
   --font-mono:    'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --font-ui:      'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-script:  'Parisienne', 'Cormorant Garamond', cursive;
 
   /* ---- motion ---- */
   --ease-reveal: cubic-bezier(.22, .61, .36, 1);
