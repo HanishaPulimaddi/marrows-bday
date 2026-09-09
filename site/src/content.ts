@@ -68,10 +68,13 @@ export const content: Content = {
   letter: {
     label: 'A LETTER FOR YOU',
     paragraphs: [
-      'Happy birthday, my love.',
-      "I don't think words will ever be enough to tell you how much you mean to me, but today I want to try. Thank you for being the person who makes my heart feel that little bit lighter. Thank you for every laugh, every walk, every little conversation that turned into something bigger than it needed to be.",
-      "As long as I have you, I know I'll always have somewhere to come home to. I love your kindness, your patience, your stubborn hope, and the way you care for the people around you — even on the days it costs you something.",
-      'I am so grateful to know you, and to be loved by you.',
+      'Happy birthday, Marrow.',
+      "I know I might not write as poetically as Manu, but my writing ain't bad. So here are some words I'd like to express to you on this beautiful occasion of your birthday.",
+      "I'm not sure how the memory of our first interaction stayed in your brain, but to me, it was a possessive girl sitting on the bed sulking about why her friends were making a new friend. A girl who pouted. Slightly rude, slightly possessive, slightly blunt. But all I could see was someone who cared so deeply for her friends that she came and cooked us breakfast in the morning. Someone who went to all lengths to cut those apples, bring that pancake mix, make it, and feed it to us.",
+      "I remember calling you the mom of the group that day, and you said, \"No, I hate when someone calls me that!\" And while you said that, I truly believe that maybe you're not the mom of the group, but you definitely are the one who cares the most, loves the most, and gives the most.",
+      "I really appreciate that you're always there for me. Every call, every message, you always respond. The fact that you're my emergency contact in Sydney should say a lot. I appreciate the people who show up for me, even in small ways: cooking me dinner, sharing information about the diet I should follow or the workout I should do, sending me a bazillion reels every day. And most importantly, always being there to celebrate my achievements. Showing up to my events, swinging by the library just to say hi or bring me a coffee. For that, and for all the things you do that I don't have space to express right now, I am truly, truly grateful.",
+      "I know that deep down in your heart, you worry that maybe you won't be loved, or that we'll leave you, or abandon you. I really want you to understand that this is not at all the case. That will not come from me, and I promise you that.",
+      'And the reason I say all of this is because I can say it out loud: I love you. Not "admire" — love. Wholeheartedly, from the bottom of my heart, my soul, and every inch of my body knows that it loves Marion.',
     ],
     photos: [
       { alt: 'Marion', src: '/images/LetterHeroPotrait.jpeg' },

@@ -8,8 +8,8 @@
   padding: 0;
   cursor: pointer;
   color: var(--cream);
-  background: radial-gradient(circle at 36% 28%, #a8161d 0%, var(--wine-500) 46%, var(--wine-700) 100%);
-  border: 1px solid rgba(246, 241, 230, .75);
+  background: radial-gradient(circle at 36% 28%, #d9242b 0%, var(--ember) 46%, #8B1116 100%);
+  border: 1px solid rgba(246, 241, 230, .9);
   box-shadow:
     0 10px 26px rgba(67, 6, 9, .34),
     0 0 30px 4px rgba(139, 17, 22, .22);

@@ -11,22 +11,22 @@ import styles from './VinylPage.module.css';
 /** a few dried stems for the left margin - drawn, so there is no asset to find */
 const DriedStems = () => (
   <svg className={styles.stems} viewBox="0 0 120 260" fill="none" aria-hidden="true">
-    <g stroke="#7B4A3A" strokeWidth="1.6" strokeLinecap="round">
+    <g stroke="#C08C7E" strokeWidth="1.6" strokeLinecap="round">
       <path d="M60 258C58 200 54 150 44 96" />
       <path d="M60 258C64 206 72 164 86 118" />
       <path d="M60 258C56 214 44 178 26 142" />
     </g>
-    <g fill="#9A161C" opacity=".72">
+    <g fill="#F0A9A5" opacity=".85">
       <ellipse cx="44" cy="92" rx="7" ry="13" transform="rotate(-12 44 92)" />
       <ellipse cx="86" cy="114" rx="6" ry="11" transform="rotate(16 86 114)" />
       <ellipse cx="26" cy="138" rx="5.5" ry="10" transform="rotate(-24 26 138)" />
     </g>
-    <g fill="#C98F7E" opacity=".65">
+    <g fill="#F6F1E6" opacity=".55">
       <ellipse cx="52" cy="140" rx="4.5" ry="8" transform="rotate(-8 52 140)" />
       <ellipse cx="74" cy="168" rx="4" ry="7.5" transform="rotate(14 74 168)" />
       <ellipse cx="40" cy="188" rx="3.6" ry="7" transform="rotate(-18 40 188)" />
     </g>
-    <g stroke="#7B4A3A" strokeWidth="1.1" strokeLinecap="round" opacity=".75">
+    <g stroke="#C08C7E" strokeWidth="1.1" strokeLinecap="round" opacity=".7">
       <path d="M52 148c-8 6-14 14-17 24" />
       <path d="M74 176c8 5 13 13 15 23" />
     </g>
