@@ -16,11 +16,10 @@ export type VinylMedia = {
 export const vinylContent = {
   /* ---- the record's centre label ---- */
   centre: {
-    /* PUT THE PHOTO HERE.  Drop the file into  site/public/assets/  then set:
-         src: '/assets/marion.jpg'      (a photo)
-         src: '/assets/marion.mp4'      (a muted, looping video)
-       Left undefined so the placeholder shows until you add it. */
-    src: undefined,
+    /* Photos live in  site/public/images/  and are referenced from the site root.
+       Swap in a video any time - a .mp4 / .webm path renders a muted, looping,
+       circular clip instead of a still. */
+    src: '/images/MainHeroPhoto.jpeg',
     alt: 'Marion',
   } as VinylMedia,
 
@@ -29,7 +28,7 @@ export const vinylContent = {
   date: '09.09.2026',
 
   /* ---- headline ---- */
-  headline: ['Happy', 'Birthday'] as readonly string[],
+  headline: ['Tunes that remind', 'us of you'] as readonly string[],
 
   /* ---- under the record, when nothing is playing ---- */
   invitation: ['PLAY THE SONGS', 'THAT REMIND ME OF YOU'] as readonly string[],
@@ -50,9 +49,9 @@ export const vinylContent = {
 
   /* ---- the film strip down the right-hand side ---- */
   filmStrip: [
-    { alt: 'Marion, one' },
-    { alt: 'Marion, two' },
-    { alt: 'Marion, three' },
+    { src: '/images/Letter1.jpeg', alt: 'Marion, one' },
+    { src: '/images/Reason5.jpeg', alt: 'Marion, two' },
+    { src: '/images/Reason6.jpeg', alt: 'Marion, three' },
   ] as VinylMedia[],
 
   /* ---- shown if every song fails to load ---- */

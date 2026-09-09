@@ -44,7 +44,6 @@ export function VinylRecord({ media, playing }: VinylRecordProps) {
         </div>
       </div>
 
-      <span className={styles.spindle} aria-hidden="true" />
     </div>
   );
 }

@@ -50,6 +50,9 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07);
 }
 
+/* It is a record, so it turns. Barely, at rest - one slow revolution every 26
+   seconds - and at proper speed while a song plays. */
+.disc { animation: revolve 26s linear infinite; }
 .spinning { animation: revolve 6.5s linear infinite; }
 
 @keyframes revolve {
@@ -146,18 +149,7 @@
     0 0 34px 6px rgba(194, 21, 28, .35);
 }
 
-/* ---- spindle hole ---- */
-.spindle {
-  position: absolute;
-  z-index: 3;
-  width: 3.2%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #0b0a09;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .spinning { animation: none; }
+  .disc, .spinning { animation: none; }
   .record[data-playing='true'] .media { transform: none; }
 }
