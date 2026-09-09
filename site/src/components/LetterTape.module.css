@@ -97,6 +97,10 @@
 .footerRule { flex: 1 1 auto; height: 1px; background: var(--rule-light); }
 
 .more {
+  /* padding grows the tap target to a comfortable size for a thumb; the equal
+     negative margin keeps the footer looking exactly as it did */
+  padding: 12px 6px;
+  margin: -12px -6px;
   font-family: var(--font-mono);
   font-weight: 400;
   font-size: 10px;
