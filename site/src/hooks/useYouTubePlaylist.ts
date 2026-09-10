@@ -7,18 +7,24 @@ import { useCallback, useEffect, useRef, useState } from 'react';
    creates a normal <iframe> embed and hands back a JS object to control it -
    quite separate from the YouTube *Data* API, which is the one that needs a key.
 
-   How it hangs together:
-     1. The script is injected once, on the first press, and calls a global
-        `onYouTubeIframeAPIReady`.
-     2. We build a YT.Player over a mount div with `listType: 'playlist'` and
-        the playlist id, so YouTube owns the queue and advances between tracks
-        by itself - nobody has to click each song.
-     3. `onStateChange` is the source of truth for the button and the record:
-        PLAYING / PAUSED / ENDED come from the player, not from the click.
-     4. `getVideoData()` gives us the current track's title and author, so the
-        "NOW PLAYING" line shows the real song without the Data API.
-     5. `onError` fires for tracks that are private, removed, or blocked from
-        embedding - we skip past those rather than stalling on them.
+   Why the player is built on mount rather than on the first press
+   --------------------------------------------------------------
+   Phones only allow playback that starts inside a real user gesture, and
+   `autoplay` is ignored outright. If the tap handler has to `await` the API
+   script and then play from the `onReady` callback, the gesture has long since
+   ended by the time playVideo() runs and the browser silently refuses.
+
+   So: the script loads and the player is constructed when the page mounts, with
+   the playlist merely cued. `toggle()` is then fully synchronous - the tap
+   calls playVideo() directly, still inside the gesture, which is what mobile
+   requires.
+
+   The rest:
+     - `listType: 'playlist'` hands the queue to YouTube, so it moves between
+       tracks by itself and nobody clicks each song.
+     - `onStateChange` is the source of truth for the button and the record.
+     - `getVideoData()` supplies the current title and artist, no Data API.
+     - `onError` skips tracks that are private, removed or un-embeddable.
 
    The iframe has to exist and be laid out for playback to work, so the page
    keeps it in the DOM, sized small and fully transparent.
@@ -103,6 +109,15 @@ function describeError(code: number): string {
   }
 }
 
+/**
+ * YouTube Music's auto-generated artist channels are called "Artist - Topic".
+ * Nobody wants to read that on a birthday card.
+ */
+function tidyArtist(author?: string): string {
+  if (!author) return '';
+  return author.replace(/\s*[-\u2013\u2014]\s*Topic\s*$/i, '').trim();
+}
+
 export type PlaybackStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 export type Track = { title: string; artist: string; id: string };
 
@@ -113,8 +128,14 @@ export function useYouTubePlaylist(playlistId: string) {
 
   const mountRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
-  /* player callbacks fire outside React's render, so they read a ref */
+  /* player callbacks fire outside React's render, so they read refs */
   const skipsRef = useRef(0);
+  /** tapped before the player finished loading - play as soon as it is ready */
+  const wantsPlayRef = useRef(false);
+  /** a setup failure is only worth showing once she actually presses play */
+  const setupErrorRef = useRef<string | null>(null);
+  /** has anything actually played yet this session */
+  const hasPlayedRef = useRef(false);
 
   /** pull the current track's title and artist straight off the player */
   const readTrack = useCallback(() => {
@@ -122,7 +143,7 @@ export function useYouTubePlaylist(playlistId: string) {
     if (!data?.title) return;
     setTrack({
       title: data.title,
-      artist: data.author ?? '',
+      artist: tidyArtist(data.author),
       id: data.video_id ?? data.title,
     });
   }, []);
@@ -132,6 +153,7 @@ export function useYouTubePlaylist(playlistId: string) {
 
     if (event.data === PLAYING) {
       skipsRef.current = 0;
+      hasPlayedRef.current = true;
       setStatus('playing');
       readTrack();
       return;
@@ -161,6 +183,16 @@ export function useYouTubePlaylist(playlistId: string) {
     console.warn(`[vinyl] YouTube player error ${event.data}: ${reason}`);
 
     skipsRef.current += 1;
+
+    /* Nothing has played yet and we are already stumbling: this is the playlist
+       refusing to start, not one bad track. Say so rather than leaving the
+       button looking broken. */
+    if (!hasPlayedRef.current && skipsRef.current >= 3) {
+      setStatus('error');
+      setError(reason);
+      return;
+    }
+
     if (skipsRef.current > MAX_SKIPS) {
       setStatus('error');
       setError(reason);
@@ -176,51 +208,84 @@ export function useYouTubePlaylist(playlistId: string) {
     }
   }, []);
 
-  const toggle = useCallback(async () => {
+  /* ---- build the player up front, cued but not playing ---- */
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const YT = await loadYouTubeAPI();
+        if (cancelled || !mountRef.current || playerRef.current) return;
+
+        playerRef.current = new YT.Player(mountRef.current, {
+          /* no videoId: `list` queues the whole playlist.
+             no autoplay: phones ignore it, and the first play has to come from
+             the tap itself. */
+          playerVars: {
+            listType: 'playlist',
+            list: playlistId,
+            controls: 0,
+            disablekb: 1,
+            modestbranding: 1,
+            rel: 0,
+            playsinline: 1,          // iOS will not play inline without this
+            origin: window.location.origin,
+          },
+          events: {
+            onReady: () => {
+              /* she pressed play while this was still loading */
+              if (wantsPlayRef.current) {
+                wantsPlayRef.current = false;
+                playerRef.current?.playVideo();
+              }
+            },
+            onStateChange,
+            onError,
+          },
+        });
+      } catch (err) {
+        console.error('[vinyl] could not create the YouTube player:', err);
+        /* the page keeps working; only the music is unavailable, and she is
+           not told about it until she asks for music */
+        setupErrorRef.current =
+          err instanceof Error ? err.message : 'the player could not start';
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      playerRef.current?.destroy();
+      playerRef.current = null;
+    };
+  }, [playlistId, onStateChange, onError]);
+
+  /* ---- deliberately NOT async: this must stay inside the tap ---- */
+  const toggle = useCallback(() => {
     const player = playerRef.current;
 
-    /* once the player exists, the button just flips it - the resulting state
-       comes back through onStateChange rather than being assumed here */
-    if (player) {
-      if (player.getPlayerState() === PLAYING) player.pauseVideo();
-      else player.playVideo();
+    if (!player) {
+      if (setupErrorRef.current) {
+        setStatus('error');
+        setError(setupErrorRef.current);
+        return;
+      }
+      /* still loading - remember the intent and play the moment it is ready */
+      wantsPlayRef.current = true;
+      setStatus('loading');
       return;
     }
 
-    setStatus('loading');
-    setError(null);
-    try {
-      const YT = await loadYouTubeAPI();
-      if (!mountRef.current) return;
-
-      playerRef.current = new YT.Player(mountRef.current, {
-        /* no videoId: `list` is what queues the whole playlist */
-        playerVars: {
-          listType: 'playlist',
-          list: playlistId,
-          autoplay: 1,        // allowed: this runs inside the click handler
-          controls: 0,
-          disablekb: 1,
-          modestbranding: 1,
-          rel: 0,
-          playsinline: 1,
-          origin: window.location.origin,
-        },
-        events: {
-          onReady: (e: { target: YTPlayer }) => e.target.playVideo(),
-          onStateChange,
-          onError,
-        },
-      });
-    } catch (err) {
-      /* the page keeps working; only the music is unavailable */
-      console.error('[vinyl] could not start the YouTube player:', err);
-      setStatus('error');
-      setError(err instanceof Error ? err.message : 'the player could not start');
+    /* the resulting state comes back through onStateChange rather than being
+       assumed here, so the button follows the player */
+    if (player.getPlayerState() === PLAYING) {
+      player.pauseVideo();
+    } else {
+      /* show that the press registered - without this, a refusal to start
+         looks exactly like a dead button */
+      if (status !== 'paused') setStatus('loading');
+      player.playVideo();
     }
-  }, [playlistId, onStateChange, onError]);
-
-  useEffect(() => () => { playerRef.current?.destroy(); playerRef.current = null; }, []);
+  }, [status]);
 
   return {
     /** attach to the (hidden) div the iframe replaces */
